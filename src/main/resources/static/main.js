@@ -109,7 +109,20 @@ document.getElementById("formLogin").addEventListener("submit", function (e) {
                         })
                         .catch(error => console.error("Error al verificar tienda:", error));
                 } else if(rolId === 3){
-                    window.location.href="registro-cliente.html";
+                    // Se le pregunta a Java si el usuario ya tiene datos de envío (perfil de cliente)
+                    fetch(`http://localhost:8080/cliente/usuario/${data.data.id}`)
+                        .then(res => res.json())
+                        .then(clienteData => {
+                            if(clienteData.success && clienteData.data != null) {
+                                // Ya tiene perfil, se guarda su id de cliente y se manda al catálogo
+                                localStorage.setItem("clienteId", clienteData.data.id);
+                                window.location.href = "catalogo.html";
+                            } else {
+                                // Es nuevo, se a registrar sus datos de envío
+                                window.location.href = "registro-cliente.html";
+                            }
+                        })
+                        .catch(error => console.error("Error al verificar cliente:", error));
                 }
             } else {
                 alert("Credenciales incorrectas");
