@@ -34,6 +34,23 @@ public class ClienteController {
         }
     }
 
+    @GetMapping("/usuario/{idUsuario}")
+    public ResponseEntity<Map<String, Object>> findByUsuarioId(@PathVariable("idUsuario") Integer idUsuario){
+        logger.info("Petición recibida: buscar cliente por id de usuario " + idUsuario);
+        try {
+            Cliente cliente = clienteService.findByUsuarioId(idUsuario);
+
+            if(cliente != null) {
+                return createResponse(Boolean.TRUE, "Cliente encontrado", cliente, HttpStatus.OK);
+            } else {
+                return createResponse(Boolean.TRUE, "El cliente aún no tiene perfil", null, HttpStatus.OK);
+            }
+        } catch (Exception e){
+            logger.error("Error al buscar cliente por usuario", e);
+            return createError(e);
+        }
+    }
+
     @PostMapping("/save")
     public ResponseEntity<Map<String, Object>> save(@RequestBody Cliente cliente){
         logger.info("Petición recibida: guardar nuevo cliente");

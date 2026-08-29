@@ -1,4 +1,7 @@
 package toscuento.sistema.store.Repository;
 
-public interface OrdenRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+import toscuento.sistema.store.model.Orden;
+
+public interface OrdenRepository extends JpaRepository<Orden, Integer> {
 }

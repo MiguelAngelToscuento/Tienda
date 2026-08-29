@@ -49,4 +49,8 @@ public class ClienteService {
         logger.info("Eliminando cliente de la base de datos id: " + id);
         clienteRepository.deleteById(id);
     }
+    // Método para buscar si el usuario ya tiene su perfil de envío
+    public Cliente findByUsuarioId(Integer idUsuario) {
+        return clienteRepository.findByUsuarioId(idUsuario);
+    }
 }
