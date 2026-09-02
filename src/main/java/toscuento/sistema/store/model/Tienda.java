@@ -27,6 +27,25 @@ public class Tienda {
     @JsonManagedReference
     private List<Producto> productos;
 
+    @Column(name = "activo", columnDefinition = "boolean default true")
+    private Boolean activo = true;
+
+    public Boolean getActivo() {
+        return activo;
+    }
+
+    public List<Producto> getProductos() {
+        return productos;
+    }
+
+    public void setProductos(List<Producto> productos) {
+        this.productos = productos;
+    }
+
+    public void setActivo(Boolean activo) {
+        this.activo = activo;
+    }
+
     public Integer getId() {
         return id;
     }

@@ -33,6 +33,17 @@ public class Producto {
     @JsonBackReference
     private Tienda tienda;
 
+   // por defecto los productos registrados están activos
+    @Column(name = "activo", columnDefinition = "boolean default true")
+    private Boolean activo = true;
+
+    public Boolean getActivo() {
+        return activo;
+    }
+
+    public void setActivo(Boolean activo) {
+        this.activo = activo;
+    }
 
     public Integer getId() {
         return id;

@@ -55,4 +55,9 @@ public class TiendaService {
         logger.info("Buscando tienda para el usuario con id:" +idUsuario);
         return tiendaRepository.findByUsuarioId(idUsuario).orElse(null);
     }
+
+    public Tienda obtenerPorId(Integer id) throws Exception {
+        return tiendaRepository.findById(id)
+                .orElseThrow(() -> new Exception("Tienda no encontrada con el id: " + id));
+    }
 }

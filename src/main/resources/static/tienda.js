@@ -10,39 +10,30 @@ if(!usuarioId){
 document.getElementById("formTienda").addEventListener("submit", function (e){
     e.preventDefault(); //prevenir que la página no se recargue
 
-    //obtener los datos del form
-    const nombre = document.getElementById("nombreTienda").value;
-    const rfc = document.getElementById("rfcTienda").value;
-    const urlLogo = document.getElementById("logoTienda").value;
+    //formData para el envío de texto y archivos
+    const formData = new FormData();
+    formData.append("nombreTienda", document.getElementById("nombreTienda").value);
+    formData.append("rfc", document.getElementById("rfcTienda").value);
+    formData.append("usuarioId", usuarioId);
 
-    //objeto con la info obtenida
-    const nuevaTienda = {
-        usuario:
-            {
-                id: parseInt(usuarioId)
-            },
-        nombreTienda: nombre,
-        rfc: rfc,
-        urlLogo: urlLogo
-    };
+    const inputLogo = document.getElementById("logoTienda");
+    if(inputLogo.files.length > 0){
+        formData.append("archivoLogo", inputLogo.files[0]);
+    }
 
-    //se manda al TiendaController del java
     fetch("http://localhost:8080/tienda/save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(nuevaTienda),
-    })
-        .then((response) => response.json())
-        .then((data) => {
-            if (data.success) {
-                alert("¡Tienda configurada con éxito!");
-                // guardar el ID de la tienda
-                localStorage.setItem("tiendaId", data.data.id);
-
-                window.location.href = "dashboard.html";
-            } else {
-                alert("Error al guardar la tienda: " + data.message);
-            }
+            method: "POST",
+            body: formData
         })
-        .catch((error) => console.error("Error: ", error));
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.success) {
+                    alert("¡Tienda configurada con éxito!");
+                    localStorage.setItem("tiendaId", data.data.id);
+                    window.location.href = "dashboard.html";
+                } else {
+                    alert("Error al guardar la tienda: " + data.message);
+                }
+            })
+            .catch((error) => console.error("Error: ", error));
 });
