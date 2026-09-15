@@ -13,17 +13,23 @@ public class Orden {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    //fecha y hora de la compra
+    // fecha y hora de la compra
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion;
 
     @Column
     private Double total;
 
-    //muchas ordenes pueden pertenecer a un solo cliente
+    // muchas ordenes pueden pertenecer a un solo cliente
     @ManyToOne
     @JoinColumn(name = "id_cliente", nullable = false)
     private Cliente cliente;
+
+    @Column(name = "metodo_pago")
+    private String metodoPago;
+
+    @Column(name = "estado_envio", columnDefinition = "varchar(50) default 'Preparando'")
+    private String estadoEnvio = "Preparando";
 
     // una orden tiene muchos detalles (productos comprados)
     @OneToMany(mappedBy = "orden", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -73,11 +79,28 @@ public class Orden {
     }
 
     public void setDetalles(List<DetalleOrden> detalles) {
-        if(detalles != null){
-            for(DetalleOrden detalle : detalles){
+        if (detalles != null) {
+            for (DetalleOrden detalle : detalles) {
                 detalle.setOrden(this);
             }
         }
         this.detalles = detalles;
     }
+
+    public String getEstadoEnvio() {
+        return estadoEnvio;
+    }
+
+    public void setEstadoEnvio(String estadoEnvio) {
+        this.estadoEnvio = estadoEnvio;
+    }
+
+    public String getMetodoPago() {
+        return metodoPago;
+    }
+
+    public void setMetodoPago(String metodoPago) {
+        this.metodoPago = metodoPago;
+    }
+
 }

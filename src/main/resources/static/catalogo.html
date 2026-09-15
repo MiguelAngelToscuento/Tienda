@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Fake Shop Catálogo</title>
@@ -7,50 +8,54 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body style="bakcground-color: #f4f6f9">
 
-    <!--barra de navegación-->
+<body style="background-color: #f4f6f9">
+
+    <!-- Navbar -->
     <header class="top-nav d-flex justify-content-between align-items-center p-3 bg-white shadow-sm sticky-top">
         <h2 class="logo text-primary m-0">Fake shop</h2>
 
-        <!-- Barra de búsqueda -->
         <div class="mx-auto" style="width: 40%;">
             <input type="text" id="inputBusqueda" class="form-control" placeholder="Buscar productos o categorías">
         </div>
 
         <div>
-            <!-- Botón del Carrito -->
-            <button class="btn btn-outline-primary me-3 position-relative" data-bs-toggle="offcanvas" data-bs-target="#carritoLateral">
+            <button class="btn btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#modalMisCompras"
+                onclick="cargarMisCompras()">Mis Pedidos</button>
+
+            <button class="btn btn-outline-danger me-2 position-relative" data-bs-toggle="offcanvas"
+                data-bs-target="#favoritosLateral">
+                Favoritos
+                <span id="badgeFavoritos"
+                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
+            </button>
+
+            <button class="btn btn-outline-primary me-3 position-relative" data-bs-toggle="offcanvas"
+                data-bs-target="#carritoLateral">
                 Mi Carrito
-                <span id="badgeCarrito" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
+                <span id="badgeCarrito"
+                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
             </button>
             <button id="btnCerrarSesionCat" class="btn btn-outline-danger btn-sm">Salir</button>
         </div>
     </header>
 
-
-    <!--malla de productos -->
-<div class="container mt-5">
-    <h3 class="mb-4 text-muted">Explora nuestros producto</h3>
-    <div class="row" id="catalogoGlobal">
-        <!-- aqui se inyectan o agregan los produtos-->
+    <!-- Catálogo de productos -->
+    <div class="container mt-5">
+        <h3 class="mb-4 text-muted">Explora nuestros productos</h3>
+        <div class="row" id="catalogoGlobal"></div>
     </div>
-</div>
 
-    <!--panel lateral para el carrito -->
+    <!-- Offcanvas del Carrito -->
     <div class="offcanvas offcanvas-end" tabindex="-1" id="carritoLateral" aria-labelledby="carritoTitulo">
         <div class="offcanvas-header border-bottom">
             <h5 class="offcanvas-title" id="carritoTitulo">Tu Pedido</h5>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body d-flex flex-column">
-
-            <!-- Lista de items en el carrito -->
             <div id="listaCarrito" class="flex-grow-1 overflow-auto mb-3">
                 <p class="text-muted text-center mt-4">El carrito está vacío</p>
             </div>
-
-            <!-- Total y Botón de Pagar -->
             <div class="border-top pt-3">
                 <div class="d-flex justify-content-between mb-3">
                     <h5 class="m-0">Total:</h5>
@@ -61,7 +66,101 @@
         </div>
     </div>
 
+    <!-- Offcanvas de Favoritos -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="favoritosLateral" aria-labelledby="favoritosTitulo">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="offcanvas-title text-danger" id="favoritosTitulo">Mis Favoritos</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body bg-light">
+            <div id="listaFavoritos" class="d-flex flex-column gap-2">
+                <p class="text-muted text-center mt-4">Aún no tienes favoritos</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Checkout -->
+    <div class="modal fade" id="modalCheckout" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Completar Compra</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h4 class="text-center mb-4">Total a pagar: $<span id="checkoutTotal"
+                            class="text-success fw-bold">0.00</span></h4>
+                    <h6 class="mb-3 text-muted">Selecciona tu método de pago:</h6>
+
+                    <div class="form-check mb-2">
+                        <input class="form-check-input opciones-pago" type="radio" name="metodoPago" id="pagoTarjeta"
+                            value="Tarjeta" checked>
+                        <label class="form-check-label fw-bold" for="pagoTarjeta">Tarjeta de Crédito / Débito</label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input opciones-pago" type="radio" name="metodoPago" id="pagoPaypal"
+                            value="PayPal">
+                        <label class="form-check-label fw-bold" for="pagoPaypal">PayPal</label>
+                    </div>
+                    <div class="form-check mb-4">
+                        <input class="form-check-input opciones-pago" type="radio" name="metodoPago" id="pagoOxxo"
+                            value="Oxxo">
+                        <label class="form-check-label fw-bold" for="pagoOxxo">Pago en efectivo (OXXO)</label>
+                    </div>
+
+                    <div id="cajaTarjeta" class="p-3 bg-light border rounded">
+                        <div class="mb-2">
+                            <label class="form-label small">Número de Tarjeta</label>
+                            <input type="text" class="form-control form-control-sm" placeholder="0000 0000 0000 0000"
+                                maxlength="16">
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <label class="form-label small">Vencimiento</label>
+                                <input type="text" class="form-control form-control-sm" placeholder="MM/YY"
+                                    maxlength="5">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small">CVV</label>
+                                <input type="password" class="form-control form-control-sm" placeholder="123"
+                                    maxlength="3">
+                            </div>
+                        </div>
+                    </div>
+                    <div id="cajaOxxo" class="p-3 bg-light border rounded text-center" style="display: none;">
+                        <p class="small m-0 text-muted">Te generaremos un código de barras al finalizar para que pagues
+                            en cualquier sucursal OXXO en las próximas 24 horas.</p>
+                    </div>
+                    <div id="cajaPaypal" class="p-3 bg-light border rounded text-center" style="display: none;">
+                        <p class="small m-0 text-muted">Se abrirá una ventana segura para que inicies sesión con tu
+                            cuenta de PayPal.</p>
+                    </div>
+                </div>
+                <div class="modal-footer d-flex justify-content-between align-items-center">
+                    <small class="text-muted m-0" style="font-size: 11px;">Se enviará a la dirección de tu
+                        perfil.</small>
+                    <button type="button" class="btn btn-success" id="btnConfirmarCompra">Pagar Ahora</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Historial de Compras -->
+    <div class="modal fade" id="modalMisCompras" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title">Historial de Pedidos</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="listaMisCompras" class="d-flex flex-column gap-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="cliente.js"></script>
 </body>
+
 </html>

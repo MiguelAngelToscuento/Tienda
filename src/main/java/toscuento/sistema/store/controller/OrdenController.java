@@ -12,13 +12,15 @@ import toscuento.sistema.store.Repository.ProductoRepository;
 import toscuento.sistema.store.model.DetalleOrden;
 import toscuento.sistema.store.model.Orden;
 import toscuento.sistema.store.model.Producto;
+import toscuento.sistema.store.service.OrdenService;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/orden")
-@CrossOrigin(origins = "*", methods = {RequestMethod.POST, RequestMethod.GET})
+@CrossOrigin(origins = "*", methods = { RequestMethod.POST, RequestMethod.GET })
 public class OrdenController {
     private static final Logger logger = LoggerFactory.getLogger(OrdenController.class);
 
@@ -26,6 +28,8 @@ public class OrdenController {
     private OrdenRepository ordenRepository;
     @Autowired
     private ProductoRepository productoRepository;
+    @Autowired
+    private OrdenService ordenService;
 
     @PostMapping("/save")
     public ResponseEntity<Map<String, Object>> save(@RequestBody Orden orden) {
@@ -56,8 +60,8 @@ public class OrdenController {
         }
     }
 
-
-    private ResponseEntity<Map<String, Object>> createResponse(Boolean success, String message, Object data, HttpStatus status){
+    private ResponseEntity<Map<String, Object>> createResponse(Boolean success, String message, Object data,
+            HttpStatus status) {
         Map<String, Object> response = new HashMap<>();
         response.put("success", success);
         response.put("message", message);
@@ -65,7 +69,33 @@ public class OrdenController {
         return new ResponseEntity<>(response, status);
     }
 
-    private ResponseEntity<Map<String, Object>> createError(Exception e){
-        return createResponse(Boolean.FALSE, "Error al procesar el pago", e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    private ResponseEntity<Map<String, Object>> createError(Exception e) {
+        return createResponse(Boolean.FALSE, "Error al procesar el pago", e.getMessage(),
+                HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @GetMapping("/tienda/{tiendaId}")
+    public ResponseEntity<Map<String, Object>> getOrdenesByTienda(@PathVariable("tiendaId") Integer tiendaId) {
+        try {
+            List<Orden> ordenes = ordenService.obtenerPorTiendaId(tiendaId);
+            return createResponse(Boolean.TRUE, "Pedidos de la tienda", ordenes, HttpStatus.OK);
+        } catch (Exception e) {
+            return createError(e);
+        }
+    }
+
+    @PutMapping("/update-status/{id}")
+    public ResponseEntity<Map<String, Object>> updateEstadoEnvio(@PathVariable("id") Integer id,
+            @RequestBody Map<String, String> payload) {
+        try {
+            String nuevoEstado = payload.get("estadoEnvio");
+            Orden orden = ordenService.obtenerPorId(id); // Este método lo hicimos en el paso anterior
+            orden.setEstadoEnvio(nuevoEstado);
+            ordenService.guardar(orden);
+            return createResponse(Boolean.TRUE, "Estado actualizado con éxito", orden, HttpStatus.OK);
+        } catch (Exception e) {
+            return createError(e);
+        }
+    }
+
 }
