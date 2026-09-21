@@ -98,4 +98,15 @@ public class OrdenController {
         }
     }
 
+    // Obtener los pedidos de un cliente específico
+    @GetMapping("/cliente/{clienteId}")
+    public ResponseEntity<Map<String, Object>> getOrdenesByCliente(@PathVariable("clienteId") Integer clienteId) {
+        try {
+            List<Orden> misOrdenes = ordenService.obtenerPorClienteId(clienteId);
+            return createResponse(Boolean.TRUE, "Historial de compras", misOrdenes, HttpStatus.OK);
+        } catch (Exception e) {
+            return createError(e);
+        }
+    }
+
 }

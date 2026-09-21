@@ -144,13 +144,18 @@ function cargarProductos() {
     .then((response) => response.json())
     .then((data) => {
       const contenedorLista = document.getElementById("listaProductos");
+      const datalistCategorias = document.getElementById("listaCategorias");
 
       if (data.success && data.data.length > 0) {
         let html = "";
+        let categoriasUnicas = new Set();
+
         data.data.forEach((prod) => {
+          if (prod.categoria) categoriasUnicas.add(prod.categoria);
+
           const imagen =
             prod.urlImagen || "https://via.placeholder.com/150?text=Sin+Imagen";
-          const isActivo = prod.activo !== false; // true o null es activo
+          const isActivo = prod.activo !== false;
           const cardEstilo = isActivo
             ? ""
             : "opacity: 0.6; filter: grayscale(80%); background-color: #f8f9fa;";
@@ -160,23 +165,30 @@ function cargarProductos() {
           const botonAccion = isActivo
             ? `<button onclick="eliminarProducto(${prod.id})" class="btn btn-sm btn-outline-danger">Eliminar</button>`
             : `<button onclick="reactivarProducto(${prod.id})" class="btn btn-sm btn-outline-success">Reactivar</button>`;
+
           html += `<div class="col-md-4 col-sm-6 mb-4">
-                                               <div class="card h-100 shadow-sm position-relative" style="${cardEstilo}">
-                                                   ${badgeEtiqueta}
-                                                   <img src="${imagen}" class="card-img-top" alt="${prod.titulo}" style="height: 200px; object-fit: cover;">
-                                                   <div class="card-body">
-                                                       <h5 class="card-title text-truncate">${prod.titulo}</h5>
-                                                       <p class="card-text text-muted mb-1">Precio: $${prod.precio.toFixed(2)}</p>
-                                                       <p class="card-text text-muted">Stock: ${prod.stock} unidades</p>
-                                                   </div>
-                                                   <div class="card-footer border-top-0 d-flex justify-content-between" style="background-color: transparent;">
-                                                       <button onclick="editarProducto(${prod.id}, '${prod.titulo}', ${prod.precio}, ${prod.stock}, '${prod.categoria}', '${prod.descripcion}', '${prod.urlImagen}')" class="btn btn-sm btn-outline-primary">Editar</button>
-                                                       ${botonAccion}
-                                                   </div>
-                                               </div>
-                                           </div>`;
+                       <div class="card h-100 shadow-sm position-relative" style="${cardEstilo}">
+                           ${badgeEtiqueta}
+                           <img src="${imagen}" class="card-img-top" alt="${prod.titulo}" style="height: 200px; object-fit: cover;">
+                           <div class="card-body">
+                               <h5 class="card-title text-truncate">${prod.titulo}</h5>
+                               <p class="card-text text-muted mb-1">Precio: $${prod.precio.toFixed(2)}</p>
+                               <p class="card-text text-muted">Stock: ${prod.stock} unidades</p>
+                           </div>
+                           <div class="card-footer border-top-0 d-flex justify-content-between" style="background-color: transparent;">
+                               <button onclick="editarProducto(${prod.id}, '${prod.titulo}', ${prod.precio}, ${prod.stock}, '${prod.categoria}', '${prod.descripcion}', '${prod.urlImagen}')" class="btn btn-sm btn-outline-primary">Editar</button>
+                               ${botonAccion}
+                           </div>
+                       </div>
+                   </div>`;
         });
         contenedorLista.innerHTML = html;
+
+        if (datalistCategorias) {
+          datalistCategorias.innerHTML = Array.from(categoriasUnicas)
+            .map((c) => `<option value="${c}">`)
+            .join("");
+        }
       } else {
         contenedorLista.innerHTML =
           '<div class="col-12 text-center text-muted"><p>Aún no tienes productos registrados.</p></div>';
@@ -185,7 +197,6 @@ function cargarProductos() {
     .catch((error) => console.error("Error al cargar productos", error));
 }
 
-//reactivar producto
 // Reactivar producto
 function reactivarProducto(idProducto) {
   const confirmar = confirm(

@@ -13,24 +13,23 @@ public class OrdenService {
     @Autowired
     private OrdenRepository ordenRepository;
 
-    // 1. Método para registrar la compra cuando el cliente paga en el carrito
+    // metodo para registrar la compra cuando el cliente paga en el carrito
     public Orden guardar(Orden orden) {
         return ordenRepository.save(orden);
     }
 
-    // 2. Método para consultar el historial de pedidos de un cliente específico
+    // metodo para consultar el historial de pedidos de un cliente específico
     public List<Orden> obtenerPorClienteId(Integer clienteId) {
         return ordenRepository.findByClienteId(clienteId);
     }
 
-    // 3. Método para buscar una orden específica por su ID (Para actualizar envíos)
+    // metodo para buscar una orden específica por su ID (Para actualizar envíos)
     public Orden obtenerPorId(Integer id) throws Exception {
         return ordenRepository.findById(id)
                 .orElseThrow(() -> new Exception("Orden no encontrada"));
     }
 
-    // 4. Método para consultar las órdenes que le han hecho a una tienda específica
-    // (Para el vendedor)
+    // metodo para consultar las órdenes que le han hecho a una tienda especíco
     public List<Orden> obtenerPorTiendaId(Integer tiendaId) {
         return ordenRepository.findByTiendaId(tiendaId);
     }

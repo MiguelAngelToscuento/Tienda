@@ -15,34 +15,40 @@
     <header class="top-nav d-flex justify-content-between align-items-center p-3 bg-white shadow-sm sticky-top">
         <h2 class="logo text-primary m-0">Fake shop</h2>
 
-        <div class="mx-auto" style="width: 40%;">
+        <div class="mx-auto" style="width: 35%;">
             <input type="text" id="inputBusqueda" class="form-control" placeholder="Buscar productos o categorías">
         </div>
 
-        <div>
-            <button class="btn btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#modalMisCompras"
-                onclick="cargarMisCompras()">Mis Pedidos</button>
+        <div class="d-flex align-items-center gap-2 flex-nowrap overflow-auto py-2">
+            <a href="perfil.html" class="btn btn-outline-info text-nowrap">Mi Perfil</a>
 
-            <button class="btn btn-outline-danger me-2 position-relative" data-bs-toggle="offcanvas"
+            <button class="btn btn-outline-secondary text-nowrap" data-bs-toggle="modal"
+                data-bs-target="#modalMisCompras" onclick="cargarMisCompras()">Mis Pedidos</button>
+
+            <button class="btn btn-outline-danger position-relative text-nowrap" data-bs-toggle="offcanvas"
                 data-bs-target="#favoritosLateral">
                 Favoritos
                 <span id="badgeFavoritos"
                     class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
             </button>
 
-            <button class="btn btn-outline-primary me-3 position-relative" data-bs-toggle="offcanvas"
+            <button class="btn btn-outline-primary position-relative text-nowrap" data-bs-toggle="offcanvas"
                 data-bs-target="#carritoLateral">
                 Mi Carrito
                 <span id="badgeCarrito"
                     class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
             </button>
-            <button id="btnCerrarSesionCat" class="btn btn-outline-danger btn-sm">Salir</button>
+            <button id="btnCerrarSesionCat" class="btn btn-outline-danger text-nowrap">Salir</button>
         </div>
     </header>
 
     <!-- Catálogo de productos -->
-    <div class="container mt-5">
-        <h3 class="mb-4 text-muted">Explora nuestros productos</h3>
+    <div class="container mt-4">
+        <h3 class="mb-3 text-muted">Explora nuestros productos</h3>
+
+        <!-- Contenedor de filtros -->
+        <div id="contenedorFiltros" class="d-flex gap-2 mb-4 overflow-auto pb-2"></div>
+
         <div class="row" id="catalogoGlobal"></div>
     </div>
 
@@ -69,7 +75,7 @@
     <!-- Offcanvas de Favoritos -->
     <div class="offcanvas offcanvas-start" tabindex="-1" id="favoritosLateral" aria-labelledby="favoritosTitulo">
         <div class="offcanvas-header border-bottom">
-            <h5 class="offcanvas-title text-danger" id="favoritosTitulo">Mis Favoritos</h5>
+            <h5 class="offcanvas-title text-danger" id="favoritosTitulo">Mis Favoritos ❤️</h5>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body bg-light">
@@ -128,17 +134,16 @@
                         </div>
                     </div>
                     <div id="cajaOxxo" class="p-3 bg-light border rounded text-center" style="display: none;">
-                        <p class="small m-0 text-muted">Te generaremos un código de barras al finalizar para que pagues
-                            en cualquier sucursal OXXO en las próximas 24 horas.</p>
+                        <p class="small m-0 text-muted">Se generará un código de barras al finalizar para pago en
+                            sucursal OXXO en las próximas 24 horas.</p>
                     </div>
                     <div id="cajaPaypal" class="p-3 bg-light border rounded text-center" style="display: none;">
-                        <p class="small m-0 text-muted">Se abrirá una ventana segura para que inicies sesión con tu
-                            cuenta de PayPal.</p>
+                        <p class="small m-0 text-muted">Se abrirá una ventana segura para inicio de sesión con PayPal.
+                        </p>
                     </div>
                 </div>
                 <div class="modal-footer d-flex justify-content-between align-items-center">
-                    <small class="text-muted m-0" style="font-size: 11px;">Se enviará a la dirección de tu
-                        perfil.</small>
+                    <small class="text-muted m-0" style="font-size: 11px;">Se enviará a la dirección del perfil.</small>
                     <button type="button" class="btn btn-success" id="btnConfirmarCompra">Pagar Ahora</button>
                 </div>
             </div>

@@ -51,22 +51,20 @@ if (btnSalir) {
 let productosGlobales = [];
 let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
 let favoritos = JSON.parse(localStorage.getItem("favoritos")) || [];
+let filtroActivo = "";
+let busquedaActiva = "";
 
 // Operaciones del catálogo
 const contenedorCatalogo = document.getElementById("catalogoGlobal");
 
 if (contenedorCatalogo) {
   // Búsqueda
+  // Búsqueda
   const inputBusqueda = document.getElementById("inputBusqueda");
   if (inputBusqueda) {
     inputBusqueda.addEventListener("input", function (e) {
-      const texto = e.target.value.toLowerCase();
-      const productosFiltrados = productosGlobales.filter(
-        (prod) =>
-          prod.titulo.toLowerCase().includes(texto) ||
-          prod.categoria.toLowerCase().includes(texto),
-      );
-      renderizarProductos(productosFiltrados);
+      busquedaActiva = e.target.value;
+      actualizarUrlYRenderizar();
     });
   }
 
@@ -179,13 +177,84 @@ if (contenedorCatalogo) {
     });
   }
 
+  // Funciones de filtro y url
+  window.aplicarFiltro = function (categoria) {
+    filtroActivo = categoria;
+    actualizarUrlYRenderizar();
+  };
+
+  function actualizarUrlYRenderizar() {
+    const params = new URLSearchParams();
+    if (filtroActivo) params.set("categoria", filtroActivo);
+    if (busquedaActiva) params.set("q", busquedaActiva);
+
+    const nuevaUrl =
+      window.location.pathname +
+      (params.toString() ? "?" + params.toString() : "");
+    window.history.pushState({ path: nuevaUrl }, "", nuevaUrl);
+
+    ejecutarFiltroLocales();
+    renderizarFiltros();
+  }
+
+  function ejecutarFiltroLocales() {
+    let filtrados = productosGlobales;
+
+    if (filtroActivo) {
+      filtrados = filtrados.filter((p) => p.categoria === filtroActivo);
+    }
+    if (busquedaActiva) {
+      const texto = busquedaActiva.toLowerCase();
+      filtrados = filtrados.filter(
+        (p) =>
+          p.titulo.toLowerCase().includes(texto) ||
+          p.categoria.toLowerCase().includes(texto),
+      );
+    }
+
+    renderizarProductos(filtrados);
+  }
+
+  function leerUrlYFiltrar() {
+    const params = new URLSearchParams(window.location.search);
+    filtroActivo = params.get("categoria") || "";
+    busquedaActiva = params.get("q") || "";
+
+    const inputB = document.getElementById("inputBusqueda");
+    if (inputB) inputB.value = busquedaActiva;
+
+    ejecutarFiltroLocales();
+    renderizarFiltros();
+  }
+
+  window.addEventListener("popstate", () => {
+    leerUrlYFiltrar();
+  });
+
+  function renderizarFiltros() {
+    const contenedor = document.getElementById("contenedorFiltros");
+    if (!contenedor) return;
+
+    const categorias = [...new Set(productosGlobales.map((p) => p.categoria))];
+
+    let html = `<button class="btn btn-${filtroActivo === "" ? "primary" : "outline-primary"} text-nowrap" onclick="aplicarFiltro('')">Todas</button>`;
+
+    categorias.forEach((cat) => {
+      if (!cat) return;
+      const btnClass = filtroActivo === cat ? "primary" : "outline-primary";
+      html += `<button class="btn btn-${btnClass} text-nowrap" onclick="aplicarFiltro('${cat}')">${cat}</button>`;
+    });
+
+    contenedor.innerHTML = html;
+  }
+
   function cargarCatalogoCompleto() {
     fetch("http://localhost:8080/producto/findAll")
       .then((response) => response.json())
       .then((data) => {
         if (data.success) {
           productosGlobales = data.data;
-          renderizarProductos(productosGlobales);
+          leerUrlYFiltrar();
           actualizarVistaCarrito();
           actualizarVistaFavoritos();
         }
@@ -416,7 +485,7 @@ function toggleFavorito(id, titulo, precio, imagen) {
 
   localStorage.setItem("favoritos", JSON.stringify(favoritos));
 
-  renderizarProductos(productosGlobales);
+  ejecutarFiltroLocales();
   actualizarVistaFavoritos();
 }
 
