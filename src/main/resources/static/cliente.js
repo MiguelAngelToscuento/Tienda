@@ -250,23 +250,21 @@ if (contenedorCatalogo) {
     leerUrlYFiltrar();
   });
 
+// botones de categorias
   function renderizarFiltros() {
     const contenedor = document.getElementById("contenedorFiltros");
     if (!contenedor) return;
-
     const categorias = [...new Set(productosGlobales.map((p) => p.categoria))];
-
     let html = `<button class="btn btn-${filtroActivo === "" ? "primary" : "outline-primary"} text-nowrap" onclick="aplicarFiltro('')">Todas</button>`;
-
     categorias.forEach((cat) => {
       if (!cat) return;
       const btnClass = filtroActivo === cat ? "primary" : "outline-primary";
       html += `<button class="btn btn-${btnClass} text-nowrap" onclick="aplicarFiltro('${cat}')">${cat}</button>`;
     });
-
     contenedor.innerHTML = html;
   }
 
+//función que manda a llamar todos los productos registrados en la base de datos
   function cargarCatalogoCompleto() {
     fetch("http://localhost:8080/producto/findAll")
       .then((response) => response.json())
@@ -280,15 +278,13 @@ if (contenedorCatalogo) {
       })
       .catch((error) => console.error("Error al cargar el catálogo: ", error));
   }
-
   cargarCatalogoCompleto();
 }
 
-// Renderizar productos
+// función que muestra todos los productos llamados a traer
 function renderizarProductos(lista) {
   const contenedor = document.getElementById("catalogoGlobal");
   if (!contenedor) return;
-
   if (lista.length === 0) {
     contenedor.innerHTML =
       '<h5 class="text-center w-100 text-muted mt-5">No se encontraron productos.</h5>';
@@ -297,11 +293,10 @@ function renderizarProductos(lista) {
     document.getElementById("btnSiguiente").disabled = true;
     return;
   }
-
+  // navegación por botones de siguiente o atras
   const totalPaginas = Math.ceil(lista.length / productosPorPagina);
   if (paginaActual > totalPaginas) paginaActual = totalPaginas;
   if (paginaActual < 1) paginaActual = 1;
-
   const inicio = (paginaActual - 1) * productosPorPagina;
   const fin = inicio + productosPorPagina;
   const productosPaginados = lista.slice(inicio, fin);
@@ -309,7 +304,7 @@ function renderizarProductos(lista) {
   let html = "";
   productosPaginados.forEach((prod) => {
     const imagen =
-      prod.urlImagen || "https://via.placeholder.com/200?text=Sin+Imagen";
+    prod.urlImagen || "https://via.placeholder.com/200?text=Sin+Imagen";
     const esFavorito = favoritos.some((fav) => fav.id === prod.id);
     const corazonEmoji = esFavorito ? "❤️" : "🤍";
     const nombreTienda = prod.tienda && prod.tienda.nombreTienda ? prod.tienda.nombreTienda : "Vendedor independiente";
@@ -355,7 +350,6 @@ window.cambiarPagina = function (direccion) {
 // Operaciones del carrito
 function agregarAlCarrito(id, titulo, precio, stock) {
   const itemExistente = carrito.find((item) => item.id === id);
-
   if (itemExistente) {
     if (itemExistente.cantidad >= stock) {
       alert("¡Límite alcanzado! No hay más stock disponible de este producto.");
@@ -379,7 +373,6 @@ function cambiarCantidad(id, delta) {
       alert("No puedes agregar más, has alcanzado el stock disponible.");
       return;
     }
-
     item.cantidad += delta;
     if (item.cantidad <= 0) {
       carrito = carrito.filter((prod) => prod.id !== id);
