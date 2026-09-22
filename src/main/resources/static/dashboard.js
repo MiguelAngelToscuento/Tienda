@@ -270,7 +270,7 @@ if (btnVerOrdenes) {
 
 function cargarPedidosRecibidos() {
   fetch(`http://localhost:8080/orden/tienda/${tiendaId}`)
-    .then("response => response.json()")
+    .then((response) => response.json())
     .then((data) => {
       if (data.success && data.data.length > 0) {
         let html = "";
@@ -285,8 +285,10 @@ function cargarPedidosRecibidos() {
           const telefono = orden.cliente
             ? orden.cliente.telefono
             : "Sin teléfono";
+
           //lista de articulos que están siendo comprados
-          let listArticulos = "";
+          let listaArticulos = "";
+
           orden.detalles.forEach((item) => {
             //producots que solo le pertenecen a la tienda
             if (
@@ -316,12 +318,12 @@ function cargarPedidosRecibidos() {
                                     <span class="badge bg-dark">${orden.estadoEnvio || "Preparando"}</span>
                                 </div>
                                 <div class="card-body">
-                                    <h6 class="text-primary mb-3">📍 Datos de Envío:</h6>
+                                    <h6 class="text-primary mb-3"> Datos de Envío:</h6>
                                     <p class="mb-1 small"><strong>Comprador:</strong> ${nombreCliente}</p>
                                     <p class="mb-1 small"><strong>Dirección:</strong> ${direccion}</p>
                                     <p class="mb-3 small"><strong>Teléfono:</strong> ${telefono}</p>
-                                    
-                                    <h6 class="text-primary mb-2">🛍️ Artículos a enviar:</h6>
+
+                                    <h6 class="text-primary mb-2"> Artículos a enviar:</h6>
                                     <ul class="list-unstyled ms-2 mb-0">
                                         ${listaArticulos}
                                     </ul>

@@ -1,5 +1,6 @@
 package toscuento.sistema.store.model;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -22,9 +23,9 @@ public class Tienda {
     @OneToOne
     @JoinColumn(name = "id_usuario", nullable = false, unique = true)
     private Usuario usuario;
-    
+
     @OneToMany(mappedBy = "tienda", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+    @JsonIgnore
     private List<Producto> productos;
 
     @Column(name = "activo", columnDefinition = "boolean default true")

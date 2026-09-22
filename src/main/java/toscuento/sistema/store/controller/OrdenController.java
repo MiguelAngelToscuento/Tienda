@@ -13,6 +13,7 @@ import toscuento.sistema.store.model.DetalleOrden;
 import toscuento.sistema.store.model.Orden;
 import toscuento.sistema.store.model.Producto;
 import toscuento.sistema.store.service.OrdenService;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -32,28 +33,36 @@ public class OrdenController {
     private OrdenService ordenService;
 
     @PostMapping("/save")
+    @Transactional //para transacciones en la base de datos
     public ResponseEntity<Map<String, Object>> save(@RequestBody Orden orden) {
         logger.info("Recibiendo nueva orden de compra...");
         try {
-            // antes de guardar la orden, se restan los productos del stock
             if (orden.getDetalles() != null) {
                 for (DetalleOrden detalle : orden.getDetalles()) {
-                    // se busca el producto original en la base de datos
+
+                    //se le dice al detalle a que orden pertenece
+                    detalle.setOrden(orden);
+                    // Se busca el producto original en la base de datos
                     Producto productoBD = productoRepository.findById(detalle.getProducto().getId())
                             .orElseThrow(() -> new Exception("Producto no encontrado"));
-                    // se resta la cantidad que el cliente compró
+                    // Se resta la cantidad que el cliente compró
                     int nuevoStock = productoBD.getStock() - detalle.getCantidad();
-                    // Si por algún error intentan comprar más de lo que hay, se detiene la compra
+                    //si se compra más de lo que hay se ejecuta esta accióna
                     if (nuevoStock < 0) {
                         throw new Exception("Stock insuficiente para: " + productoBD.getTitulo());
                     }
-                    // actualizar el producto y lo guardamos
+
+                    // Actualizamos el producto y lo guardamos
                     productoBD.setStock(nuevoStock);
                     productoRepository.save(productoBD);
                 }
             }
-            Orden ordenGuardada = ordenRepository.save(orden);
-            return createResponse(Boolean.TRUE, "¡Orden guardada con éxito!", ordenGuardada, HttpStatus.OK);
+
+            // Ahora la orden y sus detalles se guardarán en armonía
+            ordenRepository.save(orden);
+
+            return createResponse(Boolean.TRUE, "¡Orden guardada con éxito!", null, HttpStatus.OK);
+
         } catch (Exception e) {
             logger.error("Error al procesar la orden", e);
             return createError(e);
