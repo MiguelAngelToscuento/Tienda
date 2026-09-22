@@ -6,17 +6,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import toscuento.sistema.store.Repository.TiendaRepository;
 import toscuento.sistema.store.model.Tienda;
 import toscuento.sistema.store.service.TiendaService;
 import org.springframework.web.multipart.MultipartFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.UUID;
+import java.util.*;
+
 import toscuento.sistema.store.model.Usuario;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/tienda")
@@ -26,6 +25,8 @@ public class TiendaController {
 
     @Autowired
     private TiendaService tiendaService;
+    @Autowired
+    private TiendaRepository tiendaRepository;
 
     @GetMapping("/findAll/")
     public ResponseEntity<Map<String, Object>> findAll(){
@@ -119,19 +120,27 @@ public class TiendaController {
         return createResponse(Boolean.FALSE, "Ups, algo salió mal", e.fillInStackTrace(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @GetMapping("/usuario/{idUsuario}")
-    public ResponseEntity<Map<String, Object>> getTiendaByUsuario(@PathVariable("idUsuario") Integer idUsuario){
-        logger.info("Petición recibida: buscar tienda del usuario: " + idUsuario);
+    @GetMapping("/usuario/{usuarioId}")
+    public ResponseEntity<Map<String, Object>> getTiendaByUsuario(@PathVariable Integer usuarioId) {
+        Map<String, Object> response = new HashMap<>();
         try {
-            Tienda tienda = tiendaService.obtenerPorUsuarioId(idUsuario);
-            if(tienda != null){
-                return createResponse(Boolean.TRUE, "Tienda encontrada", tienda, HttpStatus.OK);
+            // Buscamos la tienda usando el método que acabamos de crear en el repositorio
+            Optional<Tienda> tienda = tiendaRepository.findByUsuarioId(usuarioId);
+
+            if (tienda.isPresent()) {
+                response.put("success", true);
+                response.put("message", "Tienda encontrada");
+                response.put("data", tienda.get());
+                return new ResponseEntity<>(response, HttpStatus.OK);
             } else {
-                return createResponse(Boolean.FALSE, "Tienda no encontrada", null, HttpStatus.NOT_FOUND);
+                response.put("success", false);
+                response.put("message", "Este usuario no tiene una tienda registrada");
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
             }
-        }catch (Exception e){
-            logger.error("Error al buscar tienda del usuario", e);
-            return createError(e);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error interno al buscar la tienda: " + e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

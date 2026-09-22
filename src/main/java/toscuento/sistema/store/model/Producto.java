@@ -1,5 +1,6 @@
 package toscuento.sistema.store.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
@@ -30,7 +31,7 @@ public class Producto {
 
     @ManyToOne
     @JoinColumn(name = "id_tienda", nullable = false)
-    @JsonBackReference
+    @JsonIgnoreProperties({"productos", "usuario"})
     private Tienda tienda;
 
    // por defecto los productos registrados están activos

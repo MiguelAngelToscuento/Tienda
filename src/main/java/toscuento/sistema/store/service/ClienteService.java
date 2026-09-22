@@ -18,39 +18,45 @@ public class ClienteService {
     @Autowired
     private ClienteRepository clienteRepository;
 
-    public List<Cliente> obtenerTodos(){
+    public List<Cliente> obtenerTodos() {
         logger.info("Obteniendo todos los clientes desde la base de datos");
         return clienteRepository.findAll();
     }
 
-    public Cliente guardar(Cliente cliente){
+    public Cliente guardar(Cliente cliente) {
         logger.info("Guardando un nuevo cliente en la base de datos");
         return clienteRepository.save(cliente);
     }
 
-    public Cliente updateCliente(Integer id, Map<String, Object> fields) throws  Exception{
+    public Cliente updateCliente(Integer id, Map<String, Object> fields) throws Exception {
         logger.info("Procesando actualización parcial para el cliente id: " + id);
         Cliente cliente = clienteRepository.findById(id).orElseThrow();
 
-        if(fields.containsKey("nombre")){
-            cliente.setNombre((String) fields.get("nombre"));
+        if (fields.containsKey("nombre")) {
+            cliente.setNombreCompleto((String) fields.get("nombre"));
         }
-        if(fields.containsKey("telefono")){
+        if (fields.containsKey("telefono")) {
             cliente.setTelefono((String) fields.get("telefono"));
         }
-        if (fields.containsKey("direccion")){
-            cliente.setDireccion((String) fields.get("direccion"));
+        if (fields.containsKey("direccion")) {
+            cliente.setDireccionEnvio((String) fields.get("direccion"));
         }
 
         return clienteRepository.save(cliente);
     }
 
-    public void eliminar(Integer id){
+    public void eliminar(Integer id) {
         logger.info("Eliminando cliente de la base de datos id: " + id);
         clienteRepository.deleteById(id);
     }
+
     // Método para buscar si el usuario ya tiene su perfil de envío
     public Cliente findByUsuarioId(Integer idUsuario) {
         return clienteRepository.findByUsuarioId(idUsuario);
+    }
+
+    // buscar cliente por su id
+    public Cliente obtenerPorId(Integer id) throws Exception {
+        return clienteRepository.findById(id).orElseThrow(() -> new Exception("Cliente no encontrado"));
     }
 }

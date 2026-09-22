@@ -9,21 +9,21 @@ public class Cliente {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column
-    private String nombre;
+    @Column(name = "nombre_completo")
+    private String nombreCompleto;
 
-    @Column
+    @Column(name = "telefono")
     private String telefono;
 
-    @Column
-    private String direccion;
+    @Column(name = "direccion_envio")
+    private String direccionEnvio;
 
-    //un cliente pertenece a un único usuario
+    // un cliente pertenece a un único usuario
     @OneToOne
     @JoinColumn(name = "id_usuario", nullable = false, unique = true)
     private Usuario usuario;
 
-    //getters y setters
+    // getters y setters
 
     public Integer getId() {
         return id;
@@ -33,12 +33,20 @@ public class Cliente {
         this.id = id;
     }
 
-    public String getNombre() {
-        return nombre;
+    public Usuario getUsuario() {
+        return usuario;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
+    public String getNombreCompleto() {
+        return nombreCompleto;
+    }
+
+    public void setNombreCompleto(String nombreCompleto) {
+        this.nombreCompleto = nombreCompleto;
     }
 
     public String getTelefono() {
@@ -49,19 +57,12 @@ public class Cliente {
         this.telefono = telefono;
     }
 
-    public String getDireccion() {
-        return direccion;
+    public String getDireccionEnvio() {
+        return direccionEnvio;
     }
 
-    public void setDireccion(String direccion) {
-        this.direccion = direccion;
+    public void setDireccionEnvio(String direccionEnvio) {
+        this.direccionEnvio = direccionEnvio;
     }
 
-    public Usuario getUsuario() {
-        return usuario;
-    }
-
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
-    }
 }
