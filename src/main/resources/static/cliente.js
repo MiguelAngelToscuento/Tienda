@@ -70,7 +70,7 @@ if (contenedorCatalogo) {
     });
   }
 
-  // Mostrar ventana emergente de pago (Checkout)
+  // Mostrar ventana emergente de pago
   const btnPagar = document.getElementById("btnPagar");
   if (btnPagar) {
     btnPagar.addEventListener("click", function () {
@@ -145,7 +145,7 @@ if (contenedorCatalogo) {
       .then((data) => {
         if (data.success) {
           if (metodoElegido === "Oxxo") {
-            alert("¡Orden generada! Revisa tu correo para obtener tu código de barras OXXO.");
+            alert("¡Orden generada! proximamente se habilitará un código de barras para completar el pago.");
           } else {
             alert("¡Pago aprobado! Compra realizada con éxito, tu pedido está en camino.");
           }

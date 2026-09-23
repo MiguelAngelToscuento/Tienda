@@ -156,7 +156,7 @@ function cargarProductos() {
     .catch((error) => console.error("Error al cargar productos", error));
 }
 
-// Reactivar un producto eliminado o inactivo
+// Reactivar un producto inactivo
 function reactivarProducto(idProducto) {
   if (confirm("¿Deseas volver a activar este producto para que aparezca en el catálogo público?")) {
     fetch(`http://localhost:8080/producto/reactivate/${idProducto}`, {
@@ -260,12 +260,12 @@ function cargarPedidosRecibidos() {
                         <span class="badge bg-dark">${orden.estadoEnvio || "Preparando"}</span>
                     </div>
                     <div class="card-body">
-                        <h6 class="text-primary mb-3">📍 Datos de Envío:</h6>
+                        <h6 class="text-primary mb-3">Datos de Envío:</h6>
                         <p class="mb-1 small"><strong>Comprador:</strong> ${nombreCliente}</p>
                         <p class="mb-1 small"><strong>Dirección:</strong> ${direccion}</p>
                         <p class="mb-3 small"><strong>Teléfono:</strong> ${telefono}</p>
 
-                        <h6 class="text-primary mb-2">🛍️ Artículos a enviar:</h6>
+                        <h6 class="text-primary mb-2">Artículos a enviar:</h6>
                         <ul class="list-unstyled ms-2 mb-0">
                             ${listaArticulos}
                         </ul>

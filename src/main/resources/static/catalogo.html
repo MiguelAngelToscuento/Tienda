@@ -53,9 +53,9 @@
 
     <!-- Controles de paginación del catálogo -->
     <div class="d-flex justify-content-center align-items-center my-4 gap-3">
-        <button id="btnAnterior" class="btn btn-outline-primary px-4" onclick="cambiarPagina(-1)">⬅️ Anterior</button>
+        <button id="btnAnterior" class="btn btn-outline-primary px-4" onclick="cambiarPagina(-1)">Anterior</button>
         <span id="textoPaginacion" class="fw-bold text-secondary">Página 1 de 1</span>
-        <button id="btnSiguiente" class="btn btn-outline-primary px-4" onclick="cambiarPagina(1)">Siguiente ➡️</button>
+        <button id="btnSiguiente" class="btn btn-outline-primary px-4" onclick="cambiarPagina(1)">Siguiente</button>
     </div>
 </div>
 
@@ -85,7 +85,7 @@
 <!-- Menú lateral de favoritos -->
 <div class="offcanvas offcanvas-start" tabindex="-1" id="favoritosLateral" aria-labelledby="favoritosTitulo">
     <div class="offcanvas-header border-bottom">
-        <h5 class="offcanvas-title text-danger" id="favoritosTitulo">Mis Favoritos ❤️</h5>
+        <h5 class="offcanvas-title text-danger" id="favoritosTitulo">Mis Favoritos</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body bg-light">
@@ -96,7 +96,7 @@
     </div>
 </div>
 
-<!-- Ventana emergente de pago (Checkout) -->
+<!-- Ventana emergente de pago -->
 <div class="modal fade" id="modalCheckout" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -146,7 +146,7 @@
 
                 <div id="cajaPaypal" class="p-3 bg-light border rounded text-center" style="display: none;">
                     <p class="small text-muted mb-3">Paga de forma segura con tu cuenta PayPal o tarjeta.</p>
-                    <!-- Contenedor inyectado por SDK de PayPal -->
+                    <!-- Contenedor inyectado por  PayPal -->
                     <div id="paypal-button-container"></div>
                 </div>
             </div>
@@ -194,7 +194,7 @@
                         <div class="col-md-6 d-flex flex-column justify-content-center">
                             <p class="text-muted small mb-1" id="detalleCategoria"></p>
                             <h3 class="fw-bold mb-2" id="detalleTitulo"></h3>
-                            <p class="text-primary mb-3 small" style="cursor: pointer;">🏪 Vendido por: <span id="detalleTienda" class="fw-bold text-decoration-underline"></span></p>
+                            <p class="text-primary mb-3 small" style="cursor: pointer;">Vendido por: <span id="detalleTienda" class="fw-bold text-decoration-underline"></span></p>
                             <h2 class="text-success mb-3">$<span id="detallePrecio"></span></h2>
                             <p class="mb-4 text-secondary" id="detalleDescripcion"></p>
                             <p class="text-muted small">Unidades disponibles: <span id="detalleStock" class="fw-bold"></span></p>
