@@ -1,22 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Registro tiendas</title>
+    <title>Registro de Tienda</title>
+    <!-- Importación de estilos principales -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<!-- Barra de navegación superior -->
 <header class="top-nav">
     <h2 class="logo">Fake shop</h2>
 </header>
-<di class="forms-wrapper">
+
+<!-- Contenedor principal de formularios -->
+<div class="forms-wrapper">
+
+    <!-- Formulario de configuración inicial del negocio -->
     <div class="form-container">
         <h2>Perfil de tu tienda</h2>
-        <p style="text-aling: center; font-size: 14px; colot: #666;">Llena los siguientes campos</p>
+        <p style="text-align: center; font-size: 14px; color: #666;">Llena los siguientes campos</p>
 
         <form id="formTienda">
             <div class="form-group">
-                <label form="nombreTienda">Nombre de tu negocio:</label>
+                <label for="nombreTienda">Nombre de tu negocio:</label>
                 <input type="text" id="nombreTienda" required>
             </div>
             <div class="form-group">
@@ -24,13 +30,16 @@
                 <input type="text" id="rfcTienda" required>
             </div>
             <div class="form-group">
-                <label for="logoTienda">Logo de tu negocio: </label>
+                <label for="logoTienda">Logo de tu negocio:</label>
                 <input type="file" id="logoTienda" accept="image/*">
             </div>
             <button type="submit">Guardar</button>
         </form>
     </div>
-</di>
+
+</div>
+
+<!-- Lógica de registro de tienda -->
 <script src="tienda.js"></script>
 </body>
 </html>

@@ -1,23 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Store</title>
+    <!-- Importación de estilos principales -->
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+<!-- Encabezado superior -->
 <header class="top-nav">
     <h2 class="logo">Fake shop</h2>
+    <!-- Pestañas de selección de rol -->
     <div class="tabs-container" id="botonesRol" style="display: none">
         <button type="button" class="tab-btn active" id="tabVendedor" onclick="seleccionarRol(2)">Soy Vendedor</button>
         <button type="button" class="tab-btn" id="tabComprador" onclick="seleccionarRol(3)">Soy Comprador</button>
     </div>
 </header>
-    <!--formulario de registros-->
+
+<!-- Contenedor principal de formularios -->
 <div class="forms-wrapper">
+
+    <!-- Formulario de registro de nuevos usuarios -->
     <div class="form-container" id="cajaRegistro" style="display: none;">
         <h2>Registro</h2>
         <input type="hidden" id="regRol" value="2">
@@ -34,34 +40,36 @@
             <button type="submit">Registrarse</button>
         </form>
 
-        <!--enlace para ir al login en caso de ya tener cuenta-->
+        <!-- Enlace para alternar a inicio de sesión -->
         <p style="text-align: center; margin-top: 15px; font-size: 14px">
             ¿Ya tienes cuenta? <a href="#" onclick="mostrarLogin()" style="color: #007bff; text-decoration: none">Iniciar sesión</a>
         </p>
     </div>
 
-    <!--formulario de inicio de sesión-->
+    <!-- Formulario de inicio de sesión -->
     <div class="form-container" id="cajaLogin">
         <h2>Iniciar sesión</h2>
         <form id="formLogin">
             <div class="form-group">
                 <label for="logCorreo">Correo electrónico:</label>
-
                 <input type="email" id="logCorreo" required>
             </div>
             <div class="form-group">
                 <label for="logPassword">Contraseña:</label>
-
                 <input type="password" id="logPassword" required>
             </div>
             <button type="submit">Entrar</button>
         </form>
+
+        <!-- Enlace para alternar a registro -->
         <p style="text-align: center; margin-top: 15px; font-size: 14px">
             ¿No tienes cuenta? <a href="#" onclick="mostrarRegistro()" style=" color: #007bff; text-decoration: none;">Regístrate aquí</a>
         </p>
     </div>
 </div>
-    <script src="main.js"></script>
+
+<!-- Lógica de autenticación y navegación -->
+<script src="main.js"></script>
 
 </body>
 

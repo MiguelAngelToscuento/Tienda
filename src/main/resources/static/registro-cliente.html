@@ -1,37 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Perfil de Comprador</title>
+    <!-- Importación de estilos -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<head class="top-nav">
+<!-- Barra de navegación superior -->
+<header class="top-nav">
     <h2 class="logo">Fake Shop</h2>
-</head>
+</header>
 
-    <!--formulario para clientes compradores+-->
-    <div class="forms-wrapper">
-        <div class="form-container">
-            <h2>Datos de envío</h2>
-            <p style="text-align: center; font-size: 14px; color: #666">Completa tu perfil para comenzar a comprar</p>
-            <form id="formCliente">
-                <div class="form-group">
-                    <label for="nombreCliente">Nombre Completo:</label>
-                    <input type="text" id="nombreCliente" required>
-                </div>
-                <div class="form-group">
-                    <label for="telCliente">Teléfono (Celular):</label>
-                    <input type="tel" id="telCliente" required>
-                </div>
-                <div class="form-group">
-                    <label for="dirCliente">Dirección de entrega:</label>
-                    <input type="text" id="dirCliente" placeholder="Calle, Número, Colonia, Ciudad" required>
-                </div>
-                <button type="submit">Guardar mis datos</button>
-            </form>
-        </div>
+<!-- Contenedor principal de formularios -->
+<div class="forms-wrapper">
+    <!-- Formulario de datos de envío para el comprador -->
+    <div class="form-container">
+        <h2>Datos de envío</h2>
+        <p style="text-align: center; font-size: 14px; color: #666">Completa tu perfil para comenzar a comprar</p>
+
+        <form id="formCliente">
+            <div class="form-group">
+                <label for="nombreCliente">Nombre Completo:</label>
+                <input type="text" id="nombreCliente" required>
+            </div>
+            <div class="form-group">
+                <label for="telCliente">Teléfono (Celular):</label>
+                <input type="tel" id="telCliente" required>
+            </div>
+            <div class="form-group">
+                <label for="dirCliente">Dirección de entrega:</label>
+                <input type="text" id="dirCliente" placeholder="Calle, Número, Colonia, Ciudad" required>
+            </div>
+            <button type="submit">Guardar mis datos</button>
+        </form>
     </div>
+</div>
+
+<!-- Lógica del cliente -->
 <script src="cliente.js"></script>
 </body>
 </html>

@@ -1,3 +1,4 @@
+/* Estilos de la cabecera del panel de control */
 .dashboard-header {
     display: flex;
     justify-content: space-between;
@@ -8,18 +9,29 @@
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.dashboard-content{
-    padding: 20px
+/* Espaciado interno del contenido principal */
+.dashboard-content {
+    padding: 20px;
 }
-.btn-danger{
+
+/* Colores personalizados para botones de advertencia o eliminar */
+.btn-danger {
     background-color: #dc3545;
 }
-.btn-danger:hover{
+
+.btn-danger:hover {
     background-color: #c82333;
 }
-.panel-grid{
-    display: grid; grid-template-columns: 1fr; gap: 20px; margin-top: 20px;
+
+/* Diseño de cuadrícula para estructurar los elementos del panel */
+.panel-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    margin-top: 20px;
 }
+
+/* Estilos generales para el fondo y cuerpo del panel de control */
 body.dashboard-body {
     display: block;
     margin: 0;

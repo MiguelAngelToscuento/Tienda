@@ -1,4 +1,4 @@
-// Guardar perfil
+// Guardar datos del perfil del cliente
 const formPerfil = document.getElementById("formCliente");
 
 if (formPerfil) {
@@ -38,7 +38,7 @@ if (formPerfil) {
   });
 }
 
-// Cerrar sesión
+// Cerrar sesión del usuario
 const btnSalir = document.getElementById("btnCerrarSesionCat");
 if (btnSalir) {
   btnSalir.addEventListener("click", function () {
@@ -47,7 +47,7 @@ if (btnSalir) {
   });
 }
 
-// Variables globales
+// Variables globales del sistema
 let productosGlobales = [];
 let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
 let favoritos = JSON.parse(localStorage.getItem("favoritos")) || [];
@@ -56,11 +56,11 @@ let busquedaActiva = "";
 let paginaActual = 1;
 const productosPorPagina = 8;
 
-// Operaciones del catálogo
+// Configuración principal del catálogo
 const contenedorCatalogo = document.getElementById("catalogoGlobal");
 
 if (contenedorCatalogo) {
-  // Búsqueda
+  // Búsqueda de productos por texto
   const inputBusqueda = document.getElementById("inputBusqueda");
   if (inputBusqueda) {
     inputBusqueda.addEventListener("input", function (e) {
@@ -70,7 +70,7 @@ if (contenedorCatalogo) {
     });
   }
 
-  // Modal de pago
+  // Mostrar ventana emergente de pago (Checkout)
   const btnPagar = document.getElementById("btnPagar");
   if (btnPagar) {
     btnPagar.addEventListener("click", function () {
@@ -98,7 +98,7 @@ if (contenedorCatalogo) {
     });
   }
 
-  // Vistas de métodos de pago
+  // Alternar vistas según el método de pago seleccionado
   const radiosPago = document.querySelectorAll(".opciones-pago");
   const btnConfirmarCompra = document.getElementById("btnConfirmarCompra");
 
@@ -117,7 +117,7 @@ if (contenedorCatalogo) {
     });
   });
 
-  // Guardar orden
+  // Registrar la orden de compra en la base de datos
   function guardarOrdenEnBaseDeDatos(metodoElegido) {
     const clienteId = localStorage.getItem("clienteId");
     if (!clienteId) {
@@ -159,7 +159,7 @@ if (contenedorCatalogo) {
       .catch((error) => console.error("Error al procesar la compra: ", error));
   }
 
-  // Acción del botón verde normal (Tarjeta u Oxxo)
+  // Procesar pago con Tarjeta u Oxxo
   if (btnConfirmarCompra) {
     btnConfirmarCompra.addEventListener("click", function () {
       const metodoElegido = document.querySelector('input[name="metodoPago"]:checked').value;
@@ -169,7 +169,7 @@ if (contenedorCatalogo) {
     });
   }
 
-  // Inicializar botones de PayPal
+  // Inyección de botones de pago con PayPal
   if (window.paypal) {
     paypal.Buttons({
       createOrder: function(data, actions) {
@@ -193,13 +193,14 @@ if (contenedorCatalogo) {
     }).render('#paypal-button-container');
   }
 
-  // Funciones de filtro y url
+  // Aplicar filtro por categoría
   window.aplicarFiltro = function (categoria) {
     filtroActivo = categoria;
     paginaActual = 1;
     actualizarUrlYRenderizar();
   };
 
+  // Actualizar URL con parámetros de búsqueda y renderizar
   function actualizarUrlYRenderizar() {
     const params = new URLSearchParams();
     if (filtroActivo) params.set("categoria", filtroActivo);
@@ -215,6 +216,7 @@ if (contenedorCatalogo) {
     renderizarFiltros();
   }
 
+  // Filtrar lista de productos localmente
   function ejecutarFiltroLocales() {
     let filtrados = productosGlobales;
 
@@ -233,6 +235,7 @@ if (contenedorCatalogo) {
     renderizarProductos(filtrados);
   }
 
+  // Leer parámetros de la URL al cargar la página
   function leerUrlYFiltrar() {
     const params = new URLSearchParams(window.location.search);
     filtroActivo = params.get("categoria") || "";
@@ -246,11 +249,12 @@ if (contenedorCatalogo) {
     renderizarFiltros();
   }
 
+  // Detectar navegación del navegador (botones atrás/adelante)
   window.addEventListener("popstate", () => {
     leerUrlYFiltrar();
   });
 
-// botones de categorias
+  // Dibujar botones de categorías en pantalla
   function renderizarFiltros() {
     const contenedor = document.getElementById("contenedorFiltros");
     if (!contenedor) return;
@@ -264,7 +268,7 @@ if (contenedorCatalogo) {
     contenedor.innerHTML = html;
   }
 
-//función que manda a llamar todos los productos registrados en la base de datos
+  // Obtener todos los productos desde el servidor
   function cargarCatalogoCompleto() {
     fetch("http://localhost:8080/producto/findAll")
       .then((response) => response.json())
@@ -278,13 +282,15 @@ if (contenedorCatalogo) {
       })
       .catch((error) => console.error("Error al cargar el catálogo: ", error));
   }
+
   cargarCatalogoCompleto();
 }
 
-// función que muestra todos los productos llamados a traer
+// Dibujar tarjetas de productos con paginación
 function renderizarProductos(lista) {
   const contenedor = document.getElementById("catalogoGlobal");
   if (!contenedor) return;
+
   if (lista.length === 0) {
     contenedor.innerHTML =
       '<h5 class="text-center w-100 text-muted mt-5">No se encontraron productos.</h5>';
@@ -293,7 +299,7 @@ function renderizarProductos(lista) {
     document.getElementById("btnSiguiente").disabled = true;
     return;
   }
-  // navegación por botones de siguiente o atras
+
   const totalPaginas = Math.ceil(lista.length / productosPorPagina);
   if (paginaActual > totalPaginas) paginaActual = totalPaginas;
   if (paginaActual < 1) paginaActual = 1;
@@ -303,8 +309,7 @@ function renderizarProductos(lista) {
 
   let html = "";
   productosPaginados.forEach((prod) => {
-    const imagen =
-    prod.urlImagen || "https://via.placeholder.com/200?text=Sin+Imagen";
+    const imagen = prod.urlImagen || "https://via.placeholder.com/200?text=Sin+Imagen";
     const esFavorito = favoritos.some((fav) => fav.id === prod.id);
     const corazonEmoji = esFavorito ? "❤️" : "🤍";
     const nombreTienda = prod.tienda && prod.tienda.nombreTienda ? prod.tienda.nombreTienda : "Vendedor independiente";
@@ -341,15 +346,17 @@ function renderizarProductos(lista) {
   document.getElementById("btnSiguiente").disabled = paginaActual === totalPaginas;
 }
 
+// Cambiar de página en el catálogo
 window.cambiarPagina = function (direccion) {
   paginaActual += direccion;
   actualizarUrlYRenderizar();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-// Operaciones del carrito
+// Agregar un producto al carrito de compras
 function agregarAlCarrito(id, titulo, precio, stock) {
   const itemExistente = carrito.find((item) => item.id === id);
+
   if (itemExistente) {
     if (itemExistente.cantidad >= stock) {
       alert("¡Límite alcanzado! No hay más stock disponible de este producto.");
@@ -366,6 +373,7 @@ function agregarAlCarrito(id, titulo, precio, stock) {
   guardarCarrito();
 }
 
+// Modificar la cantidad de un producto en el carrito
 function cambiarCantidad(id, delta) {
   const item = carrito.find((item) => item.id === id);
   if (item) {
@@ -381,11 +389,13 @@ function cambiarCantidad(id, delta) {
   }
 }
 
+// Guardar estado del carrito en almacenamiento local
 function guardarCarrito() {
   localStorage.setItem("carrito", JSON.stringify(carrito));
   actualizarVistaCarrito();
 }
 
+// Actualizar interfaz visual del carrito de compras
 function actualizarVistaCarrito() {
   const contenedor = document.getElementById("listaCarrito");
   const spanTotal = document.getElementById("totalCarrito");
@@ -428,7 +438,7 @@ function actualizarVistaCarrito() {
   badgeCarrito.innerText = cantidadTotal;
 }
 
-// Historial de compras
+// Obtener y mostrar el historial de pedidos del cliente
 function cargarMisCompras() {
   const clienteId = localStorage.getItem("clienteId");
   if (!clienteId) return;
@@ -442,17 +452,14 @@ function cargarMisCompras() {
         let html = "";
         data.data.reverse().forEach((orden) => {
           let colorEstado = "bg-secondary";
-          if (orden.estadoEnvio === "Preparando")
-            colorEstado = "bg-warning text-dark";
+          if (orden.estadoEnvio === "Preparando") colorEstado = "bg-warning text-dark";
           if (orden.estadoEnvio === "Enviado") colorEstado = "bg-primary";
           if (orden.estadoEnvio === "Entregado") colorEstado = "bg-success";
 
           let listaArticulos = "";
           if (orden.detalles && orden.detalles.length > 0) {
             orden.detalles.forEach((item) => {
-              let nombreProd = item.producto
-                ? item.producto.titulo
-                : "Producto";
+              let nombreProd = item.producto ? item.producto.titulo : "Producto";
               listaArticulos += `
                     <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-1 border-0" style="font-size: 14px;">
                         <span><span class="badge bg-light text-dark border me-2">${item.cantidad}x</span> ${nombreProd}</span>
@@ -501,6 +508,7 @@ function cargarMisCompras() {
     .catch((error) => console.error("Error al cargar historial: ", error));
 }
 
+// Mostrar u ocultar detalles de una orden específica
 function toggleDetalles(idOrden) {
   const caja = document.getElementById(`detalles-${idOrden}`);
   if (caja.style.display === "none") {
@@ -510,7 +518,7 @@ function toggleDetalles(idOrden) {
   }
 }
 
-// Favoritos
+// Agregar o quitar producto de la lista de favoritos
 function toggleFavorito(id, titulo, precio, imagen) {
   const index = favoritos.findIndex((fav) => fav.id === id);
 
@@ -526,6 +534,7 @@ function toggleFavorito(id, titulo, precio, imagen) {
   actualizarVistaFavoritos();
 }
 
+// Actualizar interfaz visual de favoritos
 function actualizarVistaFavoritos() {
   const contenedor = document.getElementById("listaFavoritos");
   const badge = document.getElementById("badgeFavoritos");
@@ -566,7 +575,7 @@ function actualizarVistaFavoritos() {
   contenedor.innerHTML = html;
 }
 
-//vista de detalle del producto
+// Mostrar ventana con detalles completos del producto
 function abrirDetalleProducto(id) {
     const prod = productosGlobales.find(p => p.id === id);
     if (!prod) return;
@@ -592,6 +601,7 @@ function abrirDetalleProducto(id) {
     new bootstrap.Modal(document.getElementById('modalDetalleProducto')).show();
 }
 
+// Obtener y dibujar reseñas de un producto
 function cargarResenas(idProducto) {
     fetch(`http://localhost:8080/resena/producto/${idProducto}`)
         .then(res => res.json())
@@ -623,7 +633,7 @@ function cargarResenas(idProducto) {
         .catch(err => console.error("Error al cargar reseñas:", err));
 }
 
-// Guardar nueva reseña
+// Guardar una nueva reseña en la base de datos
 const formResena = document.getElementById("formResena");
 if (formResena) {
     formResena.addEventListener("submit", function (e) {
@@ -661,7 +671,7 @@ if (formResena) {
     });
 }
 
-// Mostrar productos similares
+// Mostrar productos similares de la misma categoría
 function renderizarRecomendados(categoria, idActual) {
     const contenedor = document.getElementById("listaRecomendados");
     const recomendados = productosGlobales.filter(p => p.categoria === categoria && p.id !== idActual).slice(0, 3);

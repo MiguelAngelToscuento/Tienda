@@ -1,39 +1,41 @@
-//validar que el usuario haya iniciado sesión
-
+// Verificar sesión activa del usuario
 const usuarioId = localStorage.getItem("usuarioId");
 
-if(!usuarioId){
-    alert("Debes iniciar sesión primero");
-    window.location.href = "index.html"; // se redirecciona al usuario a la ventana del login
+if (!usuarioId) {
+  alert("Debes iniciar sesión primero");
+  window.location.href = "index.html";
 }
 
-document.getElementById("formTienda").addEventListener("submit", function (e){
-    e.preventDefault(); //prevenir que la página no se recargue
+// Guardar perfil de la nueva tienda
+document.getElementById("formTienda").addEventListener("submit", function (e) {
+  e.preventDefault();
 
-    //formData para el envío de texto y archivos
-    const formData = new FormData();
-    formData.append("nombreTienda", document.getElementById("nombreTienda").value);
-    formData.append("rfc", document.getElementById("rfcTienda").value);
-    formData.append("usuarioId", usuarioId);
+  // Preparar los datos y archivos para el envío
+  const formData = new FormData();
+  formData.append("nombreTienda", document.getElementById("nombreTienda").value);
+  formData.append("rfc", document.getElementById("rfcTienda").value);
+  formData.append("usuarioId", usuarioId);
 
-    const inputLogo = document.getElementById("logoTienda");
-    if(inputLogo.files.length > 0){
-        formData.append("archivoLogo", inputLogo.files[0]);
-    }
+  // Adjuntar el archivo del logo si el usuario seleccionó uno
+  const inputLogo = document.getElementById("logoTienda");
+  if (inputLogo.files.length > 0) {
+    formData.append("archivoLogo", inputLogo.files[0]);
+  }
 
-    fetch("http://localhost:8080/tienda/save", {
-            method: "POST",
-            body: formData
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                if (data.success) {
-                    alert("¡Tienda configurada con éxito!");
-                    localStorage.setItem("tiendaId", data.data.id);
-                    window.location.href = "dashboard.html";
-                } else {
-                    alert("Error al guardar la tienda: " + data.message);
-                }
-            })
-            .catch((error) => console.error("Error: ", error));
+  // Enviar los datos de la tienda al servidor
+  fetch("http://localhost:8080/tienda/save", {
+    method: "POST",
+    body: formData,
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        alert("¡Tienda configurada con éxito!");
+        localStorage.setItem("tiendaId", data.data.id);
+        window.location.href = "dashboard.html";
+      } else {
+        alert("Error al guardar la tienda: " + data.message);
+      }
+    })
+    .catch((error) => console.error("Error al registrar tienda: ", error));
 });

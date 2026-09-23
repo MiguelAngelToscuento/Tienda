@@ -1,4 +1,4 @@
-/* style.css */
+/* Estilos generales del cuerpo de la página */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -6,8 +6,9 @@ body {
     background-color: #f4f6f9;
 }
 
+/* Contenedor principal de los formularios */
 .form-container {
-    background-color: #ffffff; /* Fondo blanco para que resalten */
+    background-color: #ffffff;
     border: 1px solid #ccc;
     padding: 20px;
     border-radius: 8px;
@@ -15,25 +16,30 @@ body {
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
 
+/* Título dentro de los formularios */
 .form-container h2 {
     text-align: center;
 }
 
+/* Agrupación de etiquetas y campos de entrada */
 .form-group {
     margin-bottom: 15px;
 }
 
+/* Etiquetas de los formularios */
 .form-group label {
     display: block;
     margin-bottom: 5px;
 }
 
+/* Campos de entrada de texto */
 .form-group input {
     width: 100%;
     padding: 8px;
     box-sizing: border-box;
 }
 
+/* Estilo general para los botones */
 button {
     width: 100%;
     padding: 10px;
@@ -44,15 +50,20 @@ button {
     cursor: pointer;
 }
 
+/* Efecto al pasar el cursor sobre los botones */
 button:hover {
     background-color: #0056b3;
 }
-.tabs-container{
+
+/* Contenedor de las pestañas de selección de rol */
+.tabs-container {
     display: flex;
     gap: 15px;
     margin: 0;
 }
-.tab-btn{
+
+/* Estilo de cada pestaña inactiva */
+.tab-btn {
     flex: 1;
     width: auto;
     border-radius: 6px;
@@ -64,12 +75,15 @@ button:hover {
     font-weight: bold;
     transition: background-color 0.3s, color 0.3s;
 }
-.tab-btn.active{
+
+/* Estilo de la pestaña activa seleccionada */
+.tab-btn.active {
     background-color: #007bff;
     color: #fff;
 }
 
-.top-nav{
+/* Barra de navegación superior */
+.top-nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -78,11 +92,14 @@ button:hover {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-.logo{
+/* Logotipo de la tienda */
+.logo {
     margin: 0;
     color: #007bff;
 }
-.forms-wrapper{
+
+/* Envoltorio para centrar los formularios en la pantalla */
+.forms-wrapper {
     display: flex;
     justify-content: center;
     gap: 50px;
