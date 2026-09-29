@@ -19,6 +19,8 @@ public class ResenaController {
     @Autowired
     private ResenaRepository resenaRepository;
 
+    //mandar a llamar al service para que se puedan publicar las reseñas
+
     @GetMapping("/producto/{id}")
     public ResponseEntity<Map<String, Object>> getResenasByProducto(@PathVariable Integer id) {
         Map<String, Object> response = new HashMap<>();
