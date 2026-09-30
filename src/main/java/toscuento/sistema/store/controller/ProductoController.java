@@ -23,10 +23,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-
 @RestController
 @RequestMapping("/producto")
-@CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT})
+@CrossOrigin(origins = "*", methods = { RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE,
+        RequestMethod.PUT })
 public class ProductoController {
     private static final Logger logger = LoggerFactory.getLogger(ProductoController.class);
 
@@ -36,27 +36,27 @@ public class ProductoController {
     @Autowired
     private ProductoService productoService;
 
-    //buscar con filtro
+    // buscar con filtro
     @GetMapping("findAll/{q}")
-    public ResponseEntity<Map<String, Object>> findAll(@PathVariable("q") String q){
-        logger.info("Buscando productos con filtro: "+q);
-        try{
+    public ResponseEntity<Map<String, Object>> findAll(@PathVariable("q") String q) {
+        logger.info("Buscando productos con filtro: " + q);
+        try {
             List<Producto> productos = productoService.searchProductos(q);
             return createResponse(Boolean.TRUE, "Búsqueda exitosa", productos, HttpStatus.OK);
-        }catch(Exception e){
+        } catch (Exception e) {
             logger.error("Error al buscar productos con filtro", e);
             return createError(e);
         }
     }
 
-    //buscar todos los productos
+    // buscar todos los productos
     @GetMapping("/findAll")
-    public ResponseEntity<Map<String, Object>> findAll(){
+    public ResponseEntity<Map<String, Object>> findAll() {
         logger.info("Buscando todos los productos");
-        try{
+        try {
             List<Producto> productos = productoRepository.findByActivoTrue();
             return createResponse(Boolean.TRUE, "Lista de productos", productos, HttpStatus.OK);
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.error("Error al buscar todos los productos", e);
             return createError(e);
         }
@@ -64,22 +64,22 @@ public class ProductoController {
 
     // buscar por id
     @GetMapping("findById/{id}")
-    public ResponseEntity<Map<String, Object>> findById(@PathVariable("id") Integer id){
-        logger.info("Buscando producto con id: "+id);
-        try{
+    public ResponseEntity<Map<String, Object>> findById(@PathVariable("id") Integer id) {
+        logger.info("Buscando producto con id: " + id);
+        try {
             Optional<Producto> producto = productoRepository.findById(id);
-            if (producto.isPresent()){
+            if (producto.isPresent()) {
                 return createResponse(Boolean.TRUE, "Producto encontrado", producto, HttpStatus.OK);
-            }else {
+            } else {
                 return createResponse(Boolean.FALSE, "Producto no encontrado", null, HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
-            logger.error("Error al buscar el producto con id: ",e);
+            logger.error("Error al buscar el producto con id: ", e);
             return createError(e);
         }
     }
 
-    //guardar un nuevo producto
+    // guardar un nuevo producto
     @PostMapping("/save")
     public ResponseEntity<Map<String, Object>> save(
             @RequestParam("titulo") String titulo,
@@ -88,8 +88,7 @@ public class ProductoController {
             @RequestParam("categoria") String categoria,
             @RequestParam("descripcion") String descripcion,
             @RequestParam("tiendaId") Integer tiendaId,
-            @RequestParam(value = "archivoImagen", required = false) MultipartFile archivoImagen
-    ) {
+            @RequestParam(value = "archivoImagen", required = false) MultipartFile archivoImagen) {
         logger.info("Guardando nuevo producto con imagen");
         try {
             // objeto Producto con los datos
@@ -107,7 +106,7 @@ public class ProductoController {
 
             // guradar imagen si e usuario sube una
             if (archivoImagen != null && !archivoImagen.isEmpty()) {
-                //carpeta donde se guardarán las imagenes
+                // carpeta donde se guardarán las imagenes
                 String rutaCarpeta = "uploads/productos/";
                 Path rutaDirectorio = Paths.get(rutaCarpeta);
 
@@ -139,22 +138,22 @@ public class ProductoController {
         }
     }
 
-    //eliminar producto
+    // eliminar producto
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Map<String, Object>> delete(@PathVariable("id") Integer id){
-        logger.info("Aplcando baja lógica al producto con id: "+id);
+    public ResponseEntity<Map<String, Object>> delete(@PathVariable("id") Integer id) {
+        logger.info("Aplcando baja lógica al producto con id: " + id);
         try {
-            //se busca el producto en la db
-            Producto producto= productoRepository.findById(id)
+            // se busca el producto en la db
+            Producto producto = productoRepository.findById(id)
                     .orElseThrow(() -> new Exception("Producto no encontrado"));
-            //apagar estado del producto
+            // apagar estado del producto
             producto.setActivo(false);
 
-            //guardar cambio
+            // guardar cambio
             productoRepository.save(producto);
             return createResponse(Boolean.TRUE, "Producto eliminado correctamente", null, HttpStatus.OK);
-        }catch (Exception e){
-            logger.error("Error al aplicar la baja lógica al producto: "+e);
+        } catch (Exception e) {
+            logger.error("Error al aplicar la baja lógica al producto: " + e);
             return createError(e);
         }
     }
@@ -168,14 +167,12 @@ public class ProductoController {
             @RequestParam("categoria") String categoria,
             @RequestParam("descripcion") String descripcion,
 
-            @RequestParam(value = "archivoImagen", required = false) MultipartFile archivoImagen
-    ) {
+            @RequestParam(value = "archivoImagen", required = false) MultipartFile archivoImagen) {
         logger.info("Actualizando producto con id: " + id);
         try {
 
             Producto producto = productoRepository.findById(id)
                     .orElseThrow(() -> new Exception("Producto no encontrado"));
-
 
             producto.setTitulo(titulo);
             producto.setPrecio(precio);
@@ -200,27 +197,29 @@ public class ProductoController {
                 producto.setUrlImagen("/" + rutaCarpeta + nombreUnico);
             }
             Producto productoActualizado = productoRepository.save(producto);
-            return createResponse(Boolean.TRUE, "Producto actualizado correctamente", productoActualizado, HttpStatus.OK);
+            return createResponse(Boolean.TRUE, "Producto actualizado correctamente", productoActualizado,
+                    HttpStatus.OK);
 
-        } catch (Exception e){
+        } catch (Exception e) {
             logger.error("Error al actualizar el producto", e);
             return createError(e);
         }
     }
 
-
     @GetMapping("/tienda/{idTienda}")
-    public ResponseEntity<Map<String, Object>> findByTienda(@PathVariable("idTienda") Integer idTienda){
+    public ResponseEntity<Map<String, Object>> findByTienda(@PathVariable("idTienda") Integer idTienda) {
         logger.info("Buscando productos de la tienda id: " + idTienda);
         try {
             List<Producto> productos = productoRepository.findByTiendaId(idTienda);
             return createResponse(Boolean.TRUE, "Productos de la tienda", productos, HttpStatus.OK);
-        } catch (Exception e){
+        } catch (Exception e) {
             logger.error("Error al buscar productos de la tienda", e);
             return createError(e);
         }
     }
-    private ResponseEntity<Map<String, Object>> createResponse(Boolean success, String message, Object data, HttpStatus status){
+
+    private ResponseEntity<Map<String, Object>> createResponse(Boolean success, String message, Object data,
+            HttpStatus status) {
         Map<String, Object> response = new HashMap<>();
         response.put("success", success);
         response.put("message", message);
@@ -228,24 +227,40 @@ public class ProductoController {
         return new ResponseEntity<>(response, status);
     }
 
-    private ResponseEntity<Map<String, Object>> createError(Exception e){
-        return createResponse(Boolean.FALSE, "Ups, algo salió mal", e.fillInStackTrace(), HttpStatus.INTERNAL_SERVER_ERROR);
+    private ResponseEntity<Map<String, Object>> createError(Exception e) {
+        return createResponse(Boolean.FALSE, "Ups, algo salió mal", e.fillInStackTrace(),
+                HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @PutMapping("/reactivate/{id}")
-    public ResponseEntity<Map<String, Object>> reactivate(@PathVariable("id") Integer id){
-        logger.info("Reactivando producto con id: "+id);
+    public ResponseEntity<Map<String, Object>> reactivate(@PathVariable("id") Integer id) {
+        logger.info("Reactivando producto con id: " + id);
         try {
             Producto producto = productoRepository.findById(id)
                     .orElseThrow(() -> new Exception("Producto no encontrado"));
-            //encender el producto
+            // encender el producto
             producto.setActivo(true);
             productoRepository.save(producto);
             return createResponse(Boolean.TRUE, "Producto reactivado correctamente", null, HttpStatus.OK);
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.error("Error al reactivar el producto", e);
             return createError(e);
         }
     }
 
-}//fin de la clse
+    @GetMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> obtenerPorId(@PathVariable Integer id) {
+        Optional<Producto> producto = productoRepository.findById(id);
+        Map<String, Object> response = new HashMap<>();
+
+        if (producto.isPresent()) {
+            response.put("success", true);
+            response.put("data", producto.get());
+            return ResponseEntity.ok(response);
+        } else {
+            response.put("success", false);
+            response.put("message", "Producto no encontrado");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+    }
+}// fin de la clse

@@ -33,21 +33,21 @@ public class OrdenController {
     private OrdenService ordenService;
 
     @PostMapping("/save")
-    @Transactional //para transacciones en la base de datos
+    @Transactional // para transacciones en la base de datos
     public ResponseEntity<Map<String, Object>> save(@RequestBody Orden orden) {
         logger.info("Recibiendo nueva orden de compra...");
         try {
             if (orden.getDetalles() != null) {
                 for (DetalleOrden detalle : orden.getDetalles()) {
 
-                    //se le dice al detalle a que orden pertenece
+                    // se le dice al detalle a que orden pertenece
                     detalle.setOrden(orden);
                     // Se busca el producto original en la base de datos
                     Producto productoBD = productoRepository.findById(detalle.getProducto().getId())
                             .orElseThrow(() -> new Exception("Producto no encontrado"));
                     // Se resta la cantidad que el cliente compró
                     int nuevoStock = productoBD.getStock() - detalle.getCantidad();
-                    //si se compra más de lo que hay se ejecuta esta accióna
+                    // si se compra más de lo que hay se ejecuta esta accióna
                     if (nuevoStock < 0) {
                         throw new Exception("Stock insuficiente para: " + productoBD.getTitulo());
                     }

@@ -27,36 +27,40 @@ function mostrarLogin() {
 }
 
 // Procesar registro de nuevo usuario
-document.getElementById("formRegistro").addEventListener("submit", function (e) {
-  e.preventDefault();
+document
+  .getElementById("formRegistro")
+  .addEventListener("submit", function (e) {
+    e.preventDefault();
 
-  const correo = document.getElementById("regCorreo").value;
-  const contrasena = document.getElementById("regPassword").value;
-  const rolSeleccionado = document.getElementById("regRol").value;
+    const correo = document.getElementById("regCorreo").value;
+    const contrasena = document.getElementById("regPassword").value;
+    const rolSeleccionado = document.getElementById("regRol").value;
 
-  const nuevoUser = {
-    correo: correo,
-    contrasena: contrasena,
-    estado: 1,
-    rol: { id: parseInt(rolSeleccionado) },
-  };
+    const nuevoUser = {
+      correo: correo,
+      contrasena: contrasena,
+      estado: 1,
+      rol: { id: parseInt(rolSeleccionado) },
+    };
 
-  fetch("http://localhost:8080/usuario/save", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(nuevoUser),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.success) {
-        alert("¡Usuario registrado con éxito!");
-        document.getElementById("formRegistro").reset();
-      } else {
-        alert("Error: " + data.message);
-      }
+    fetch("http://localhost:8080/usuario/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(nuevoUser),
     })
-    .catch((error) => console.error("Error al registrar:", error));
-});
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          alert("¡Usuario registrado con éxito!");
+          document.getElementById("formRegistro").reset();
+          mostrarLogin();
+          document.getElementById("logCorreo").value = correo;
+        } else {
+          alert("Error: " + data.message);
+        }
+      })
+      .catch((error) => console.error("Error al registrar:", error));
+  });
 
 // Procesar inicio de sesión
 document.getElementById("formLogin").addEventListener("submit", function (e) {
@@ -97,7 +101,9 @@ document.getElementById("formLogin").addEventListener("submit", function (e) {
                 window.location.href = "registro-tienda.html";
               }
             })
-            .catch((error) => console.error("Error al verificar tienda:", error));
+            .catch((error) =>
+              console.error("Error al verificar tienda:", error),
+            );
         } else if (rolId === 3) {
           // Verificar si el comprador ya tiene datos de envío registrados
           fetch(`http://localhost:8080/cliente/usuario/${data.data.id}`)
@@ -110,7 +116,9 @@ document.getElementById("formLogin").addEventListener("submit", function (e) {
                 window.location.href = "registro-cliente.html";
               }
             })
-            .catch((error) => console.error("Error al verificar cliente:", error));
+            .catch((error) =>
+              console.error("Error al verificar cliente:", error),
+            );
         }
       } else {
         alert("Credenciales incorrectas");

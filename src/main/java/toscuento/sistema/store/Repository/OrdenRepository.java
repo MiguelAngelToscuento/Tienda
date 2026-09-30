@@ -13,4 +13,7 @@ public interface OrdenRepository extends JpaRepository<Orden, Integer> {
     List<Orden> findByTiendaId(@Param("tiendaId") Integer tiendaId);
 
     List<Orden> findByClienteId(Integer clienteId);
+
+    @Query("SELECT CASE WHEN COUNT(o) > 0 THEN true ELSE false END FROM Orden o JOIN o.detalles d WHERE o.cliente.id = :clienteId AND d.producto.id = :productoId")
+    boolean haCompradoProducto(@Param("clienteId") Integer clienteId, @Param("productoId") Integer productoId);
 }

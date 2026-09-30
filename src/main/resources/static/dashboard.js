@@ -8,59 +8,68 @@ if (!usuarioId) {
 }
 
 // Cerrar sesión del vendedor
-document.getElementById("btnCerrarSesion").addEventListener("click", function () {
-  localStorage.clear();
-  alert("Sesion cerrada correctamente.");
-  window.location.href = "index.html";
-});
+document
+  .getElementById("btnCerrarSesion")
+  .addEventListener("click", function () {
+    localStorage.clear();
+    alert("Sesion cerrada correctamente.");
+    window.location.href = "index.html";
+  });
 
 // Guardar o actualizar producto
-document.getElementById("formProducto").addEventListener("submit", function (e) {
-  e.preventDefault();
+document
+  .getElementById("formProducto")
+  .addEventListener("submit", function (e) {
+    e.preventDefault();
 
-  const idProducto = document.getElementById("prodId").value;
-  const formData = new FormData();
+    const idProducto = document.getElementById("prodId").value;
+    const formData = new FormData();
 
-  formData.append("titulo", document.getElementById("prodNombre").value);
-  formData.append("precio", document.getElementById("prodPrecio").value);
-  formData.append("stock", document.getElementById("prodStock").value);
-  formData.append("categoria", document.getElementById("prodCategoria").value);
-  formData.append("descripcion", document.getElementById("prodDescripcion").value);
-  formData.append("tiendaId", tiendaId);
+    formData.append("titulo", document.getElementById("prodNombre").value);
+    formData.append("precio", document.getElementById("prodPrecio").value);
+    formData.append("stock", document.getElementById("prodStock").value);
+    formData.append(
+      "categoria",
+      document.getElementById("prodCategoria").value,
+    );
+    formData.append(
+      "descripcion",
+      document.getElementById("prodDescripcion").value,
+    );
+    formData.append("tiendaId", tiendaId);
 
-  const inputImagen = document.getElementById("prodImagen");
-  if (inputImagen.files.length > 0) {
-    formData.append("archivoImagen", inputImagen.files[0]);
-  }
+    const inputImagen = document.getElementById("prodImagen");
+    if (inputImagen.files.length > 0) {
+      formData.append("archivoImagen", inputImagen.files[0]);
+    }
 
-  const url = idProducto
-    ? `http://localhost:8080/producto/update/${idProducto}`
-    : "http://localhost:8080/producto/save";
-  const metodo = idProducto ? "PUT" : "POST";
+    const url = idProducto
+      ? `http://localhost:8080/producto/update/${idProducto}`
+      : "http://localhost:8080/producto/save";
+    const metodo = idProducto ? "PUT" : "POST";
 
-  fetch(url, {
-    method: metodo,
-    body: formData,
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.success) {
-        alert(idProducto ? "Producto actualizado exitosamente." : "Producto publicado exitosamente.");
-        const miModal = document.getElementById("modalAgregarProducto");
-        const modalBootstrap = bootstrap.Modal.getOrCreateInstance(miModal);
-        modalBootstrap.hide();
-        cargarProductos();
-      } else {
-        alert("Error al guardar: " + data.message);
-      }
+    fetch(url, {
+      method: metodo,
+      body: formData,
     })
-    .catch((error) => console.error("Error al procesar el producto: ", error));
-});
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          alert(idProducto ? "Producto actualizado." : "Producto publicado.");
+          const miModal = document.getElementById("modalAgregarProducto");
+          const modalBootstrap = bootstrap.Modal.getOrCreateInstance(miModal);
+          modalBootstrap.hide();
+          cargarProductos();
+        } else {
+          alert("Error al guardar: " + data.message);
+        }
+      })
+      .catch((error) => console.error("Error al procesar el producto:", error));
+  });
 
-// Cargar datos del producto en el formulario para editar
-function editarProducto(id, titulo, precio, stock, categoria, descripcion, urlImagen) {
+// Cargar datos en el modal para editar
+function editarProducto(id, titulo, precio, stock, categoria, descripcion) {
   document.getElementById("tituloModalProducto").innerText = "Editar Artículo";
-
   document.getElementById("prodId").value = id;
   document.getElementById("prodNombre").value = titulo;
   document.getElementById("prodPrecio").value = precio;
@@ -74,16 +83,19 @@ function editarProducto(id, titulo, precio, stock, categoria, descripcion, urlIm
   modalBootstrap.show();
 }
 
-// Limpiar formulario al registrar un nuevo artículo
-document.getElementById("btnAgregarProd").addEventListener("click", function () {
-  document.getElementById("tituloModalProducto").innerText = "Registrar un Artículo";
-  document.getElementById("formProducto").reset();
-  document.getElementById("prodId").value = "";
-});
+// Limpiar modal para producto nuevo
+document
+  .getElementById("btnAgregarProd")
+  .addEventListener("click", function () {
+    document.getElementById("tituloModalProducto").innerText =
+      "Registrar un Artículo";
+    document.getElementById("formProducto").reset();
+    document.getElementById("prodId").value = "";
+  });
 
 // Eliminar producto
 function eliminarProducto(idProducto) {
-  if (confirm("¿Estás seguro de que deseas eliminar este producto?")) {
+  if (confirm("¿Estás seguro de eliminar este producto?")) {
     fetch(`http://localhost:8080/producto/delete/${idProducto}`, {
       method: "DELETE",
     })
@@ -100,72 +112,16 @@ function eliminarProducto(idProducto) {
   }
 }
 
-// Cargar y mostrar lista de productos de la tienda
-function cargarProductos() {
-  fetch(`http://localhost:8080/producto/tienda/${tiendaId}`)
-    .then((response) => response.json())
-    .then((data) => {
-      const contenedorLista = document.getElementById("listaProductos");
-      const datalistCategorias = document.getElementById("listaCategorias");
-
-      if (data.success && data.data.length > 0) {
-        let html = "";
-        let categoriasUnicas = new Set();
-
-        data.data.forEach((prod) => {
-          if (prod.categoria) categoriasUnicas.add(prod.categoria);
-
-          const imagen = prod.urlImagen || "https://via.placeholder.com/150?text=Sin+Imagen";
-          const isActivo = prod.activo !== false;
-
-          const cardEstilo = isActivo ? "" : "opacity: 0.6; filter: grayscale(80%); background-color: #f8f9fa;";
-          const badgeEtiqueta = isActivo ? "" : `<span class="badge bg-danger position-absolute" style="top: 10px; right: 10px; z-index: 2;">Inactivo</span>`;
-          const botonAccion = isActivo
-            ? `<button onclick="eliminarProducto(${prod.id})" class="btn btn-sm btn-outline-danger">Eliminar</button>`
-            : `<button onclick="reactivarProducto(${prod.id})" class="btn btn-sm btn-outline-success">Reactivar</button>`;
-
-          html += `
-            <div class="col-md-4 col-sm-6 mb-4">
-                <div class="card h-100 shadow-sm position-relative" style="${cardEstilo}">
-                    ${badgeEtiqueta}
-                    <img src="${imagen}" class="card-img-top" alt="${prod.titulo}" style="height: 200px; object-fit: cover;">
-                    <div class="card-body">
-                        <h5 class="card-title text-truncate">${prod.titulo}</h5>
-                        <p class="card-text text-muted mb-1">Precio: $${prod.precio.toFixed(2)}</p>
-                        <p class="card-text text-muted">Stock: ${prod.stock} unidades</p>
-                    </div>
-                    <div class="card-footer border-top-0 d-flex justify-content-between" style="background-color: transparent;">
-                        <button onclick="editarProducto(${prod.id}, '${prod.titulo}', ${prod.precio}, ${prod.stock}, '${prod.categoria}', '${prod.descripcion}', '${prod.urlImagen}')" class="btn btn-sm btn-outline-primary">Editar</button>
-                        ${botonAccion}
-                    </div>
-                </div>
-            </div>`;
-        });
-
-        contenedorLista.innerHTML = html;
-
-        if (datalistCategorias) {
-          datalistCategorias.innerHTML = Array.from(categoriasUnicas)
-            .map((c) => `<option value="${c}">`)
-            .join("");
-        }
-      } else {
-        contenedorLista.innerHTML = '<div class="col-12 text-center text-muted"><p>Aún no tienes productos registrados.</p></div>';
-      }
-    })
-    .catch((error) => console.error("Error al cargar productos", error));
-}
-
-// Reactivar un producto inactivo
+// Reactivar producto inactivo
 function reactivarProducto(idProducto) {
-  if (confirm("¿Deseas volver a activar este producto para que aparezca en el catálogo público?")) {
+  if (confirm("¿Deseas volver a activar este producto?")) {
     fetch(`http://localhost:8080/producto/reactivate/${idProducto}`, {
       method: "PUT",
     })
       .then((response) => response.json())
       .then((data) => {
         if (data.success) {
-          alert("Producto reactivado exitosamente.");
+          alert("Producto reactivado.");
           cargarProductos();
         } else {
           alert("Error al reactivar: " + data.message);
@@ -175,15 +131,30 @@ function reactivarProducto(idProducto) {
   }
 }
 
-// Cargar información de la tienda en el encabezado
+// Obtener productos desde el backend
+function cargarProductos() {
+  fetch(`http://localhost:8080/producto/tienda/${tiendaId}`)
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success && data.data.length > 0) {
+        procesarProductosDelServidor(data.data);
+      } else {
+        document.getElementById("listaProductos").innerHTML =
+          '<div class="col-12 text-center text-muted"><p>Aún no tienes productos registrados.</p></div>';
+      }
+    })
+    .catch((error) => console.error("Error al cargar productos", error));
+}
+
+// Obtener logo y nombre de la tienda
 function cargarInfoTienda() {
   const idDelUsuario = localStorage.getItem("usuarioId");
-
   fetch(`http://localhost:8080/tienda/usuario/${idDelUsuario}`)
     .then((response) => response.json())
     .then((data) => {
       if (data.success && data.data != null) {
-        document.getElementById("textoNombreTienda").innerText = data.data.nombreTienda;
+        document.getElementById("textoNombreTienda").innerText =
+          data.data.nombreTienda;
         if (data.data.urlLogo) {
           const imgLogo = document.getElementById("imgLogoTienda");
           imgLogo.src = data.data.urlLogo;
@@ -191,18 +162,18 @@ function cargarInfoTienda() {
         }
       }
     })
-    .catch((error) => console.error("Error al cargar la tienda: ", error));
+    .catch((error) => console.error("Error al cargar la tienda:", error));
 }
 
-// Variables de interfaz para el panel de gestión
+// Elementos de interfaz (Pedidos vs Inventario)
 const btnVerOrdenes = document.getElementById("btnVerOrdenes");
-const contenedorProductos = document.getElementById("listaProductos");
+const contenedorProductosHTML = document.getElementById("listaProductos");
 const contenedorPedidos = document.getElementById("listaPedidosRecibidos");
 const tituloDashboard = document.getElementById("tituloDashboard");
 const btnAgregarProd = document.getElementById("btnAgregarProd");
 let viendoPedidos = false;
 
-// Alternar vista entre inventario y pedidos recibidos
+// Alternar entre inventario y pedidos
 if (btnVerOrdenes) {
   btnVerOrdenes.addEventListener("click", function () {
     viendoPedidos = !viendoPedidos;
@@ -210,20 +181,20 @@ if (btnVerOrdenes) {
       tituloDashboard.innerText = "Pedidos por Enviar";
       btnVerOrdenes.innerText = "Volver al Inventario";
       btnAgregarProd.style.display = "none";
-      contenedorProductos.style.display = "none";
+      contenedorProductosHTML.style.display = "none";
       contenedorPedidos.style.display = "flex";
       cargarPedidosRecibidos();
     } else {
       tituloDashboard.innerText = "Gestión de Inventario";
       btnVerOrdenes.innerText = "Ver Pedidos Recibidos";
       btnAgregarProd.style.display = "inline-block";
-      contenedorProductos.style.display = "flex";
+      contenedorProductosHTML.style.display = "flex";
       contenedorPedidos.style.display = "none";
     }
   });
 }
 
-// Cargar y mostrar lista de pedidos recibidos
+// Obtener pedidos
 function cargarPedidosRecibidos() {
   fetch(`http://localhost:8080/orden/tienda/${tiendaId}`)
     .then((response) => response.json())
@@ -231,14 +202,23 @@ function cargarPedidosRecibidos() {
       if (data.success && data.data.length > 0) {
         let html = "";
         data.data.reverse().forEach((orden) => {
-
-          const nombreCliente = orden.cliente ? orden.cliente.nombreCompleto : "Cliente Desconocido";
-          const direccion = orden.cliente ? orden.cliente.direccionEnvio : "Dirección no registrada";
-          const telefono = orden.cliente ? orden.cliente.telefono : "Sin teléfono";
+          const nombreCliente = orden.cliente
+            ? orden.cliente.nombreCompleto
+            : "Cliente Desconocido";
+          const direccion = orden.cliente
+            ? orden.cliente.direccionEnvio
+            : "Dirección no registrada";
+          const telefono = orden.cliente
+            ? orden.cliente.telefono
+            : "Sin teléfono";
           let listaArticulos = "";
 
           orden.detalles.forEach((item) => {
-            if (item.producto && item.producto.tienda && item.producto.tienda.id === parseInt(tiendaId)) {
+            if (
+              item.producto &&
+              item.producto.tienda &&
+              item.producto.tienda.id === parseInt(tiendaId)
+            ) {
               listaArticulos += `<li class="small mb-1">• ${item.cantidad}x ${item.producto.titulo} <span class="text-success">($${item.precioUnitario})</span></li>`;
             }
           });
@@ -266,28 +246,23 @@ function cargarPedidosRecibidos() {
                         <p class="mb-3 small"><strong>Teléfono:</strong> ${telefono}</p>
 
                         <h6 class="text-primary mb-2">Artículos a enviar:</h6>
-                        <ul class="list-unstyled ms-2 mb-0">
-                            ${listaArticulos}
-                        </ul>
+                        <ul class="list-unstyled ms-2 mb-0">${listaArticulos}</ul>
                     </div>
-                    <div class="card-footer bg-light border-0">
-                        ${botonAccion}
-                    </div>
+                    <div class="card-footer bg-light border-0">${botonAccion}</div>
                 </div>
-            </div>
-          `;
+            </div>`;
         });
         contenedorPedidos.innerHTML = html;
       } else {
-        contenedorPedidos.innerHTML = `<div class="col-12 text-center text-muted mt-5"><h5>Aún no tienes pedidos registrados.</h5><p>¡Sigue publicando tus productos!</p></div>`;
+        contenedorPedidos.innerHTML = `<div class="col-12 text-center text-muted mt-5"><h5>Aún no tienes pedidos.</h5></div>`;
       }
     })
-    .catch((error) => console.error("Error al cargar pedidos: ", error));
+    .catch((error) => console.error("Error al cargar pedidos:", error));
 }
 
-// Actualizar el estado de envío de un pedido
+// Cambiar estado del pedido
 function cambiarEstadoEnvio(idOrden, nuevoEstado) {
-  if (confirm(`¿Estás seguro de marcar este pedido como '${nuevoEstado}'? El cliente verá esta actualización.`)) {
+  if (confirm(`¿Marcar este pedido como '${nuevoEstado}'?`)) {
     fetch(`http://localhost:8080/orden/update-status/${idOrden}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -305,6 +280,127 @@ function cambiarEstadoEnvio(idOrden, nuevoEstado) {
   }
 }
 
-// Inicializar datos al cargar la página
-cargarProductos();
+// --- Lógica de Paginación y Filtrado ---
+let productosGlobales = [];
+let limitePorPagina = 12;
+
+const urlParams = new URLSearchParams(window.location.search);
+let categoriaActual = urlParams.get("categoria") || "Todas";
+let paginaActual = parseInt(urlParams.get("pagina")) || 1;
+
+document.addEventListener("DOMContentLoaded", () => {
+  const selector = document.getElementById("filtroCategoria");
+  if (selector) selector.value = categoriaActual;
+});
+
+function procesarProductosDelServidor(datosDelBackend) {
+  productosGlobales = datosDelBackend;
+  actualizarVista();
+}
+
+function actualizarVista() {
+  // Filtrar
+  let productosFiltrados = productosGlobales;
+  if (categoriaActual !== "Todas") {
+    productosFiltrados = productosGlobales.filter(
+      (p) => p.categoria === categoriaActual,
+    );
+  }
+
+  // Paginar
+  const totalPaginas =
+    Math.ceil(productosFiltrados.length / limitePorPagina) || 1;
+  if (paginaActual > totalPaginas) paginaActual = totalPaginas;
+  if (paginaActual < 1) paginaActual = 1;
+
+  const inicio = (paginaActual - 1) * limitePorPagina;
+  const fin = inicio + limitePorPagina;
+  const productosPagina = productosFiltrados.slice(inicio, fin);
+
+  // Actualizar botones de UI
+  document.getElementById("indicadorPagina").innerText =
+    `Página ${paginaActual} de ${totalPaginas}`;
+  document.getElementById("btnAnterior").disabled = paginaActual === 1;
+  document.getElementById("btnSiguiente").disabled =
+    paginaActual === totalPaginas;
+
+  // Actualizar URL
+  const nuevaUrl = new URL(window.location);
+  nuevaUrl.searchParams.set("categoria", categoriaActual);
+  nuevaUrl.searchParams.set("pagina", paginaActual);
+  window.history.pushState({}, "", nuevaUrl);
+
+  // Dibujar HTML
+  // CORRECCIÓN: Usar ID "listaProductos" que existe en el dashboard
+  const contenedor = document.getElementById("listaProductos");
+
+  if (productosPagina.length === 0) {
+    contenedor.innerHTML = `<div class="col-12 text-center mt-5"><h5 class="text-muted">No se encontraron productos.</h5></div>`;
+    return;
+  }
+
+  let html = "";
+  let categoriasUnicas = new Set();
+
+  productosPagina.forEach((prod) => {
+    if (prod.categoria) categoriasUnicas.add(prod.categoria);
+
+    const imagen =
+      prod.urlImagen ||
+      "https://placehold.co/600x400/eeeeee/333333?text=Sin+Imagen";
+    const isActivo = prod.activo !== false;
+    const cardEstilo = isActivo
+      ? ""
+      : "opacity: 0.6; filter: grayscale(80%); background-color: #f8f9fa;";
+    const badgeEtiqueta = isActivo
+      ? ""
+      : `<span class="badge bg-danger position-absolute" style="top: 10px; right: 10px; z-index: 2;">Inactivo</span>`;
+    const botonAccion = isActivo
+      ? `<button onclick="eliminarProducto(${prod.id})" class="btn btn-sm btn-outline-danger">Eliminar</button>`
+      : `<button onclick="reactivarProducto(${prod.id})" class="btn btn-sm btn-outline-success">Reactivar</button>`;
+
+    html += `
+            <div class="col-md-4 col-sm-6 mb-4">
+                <div class="card h-100 shadow-sm position-relative" style="${cardEstilo}">
+                    ${badgeEtiqueta}
+                    <img src="${imagen}" class="card-img-top p-2" alt="${prod.titulo}" style="height: 200px; object-fit: contain; background-color: #ffffff; width: 100%;">
+                    <div class="card-body">
+                        <h5 class="card-title text-truncate" title="${prod.titulo}">${prod.titulo}</h5>
+                        <p class="card-text text-muted mb-1">Precio: $${prod.precio.toFixed(2)}</p>
+                        <p class="card-text text-muted">Stock: ${prod.stock} unidades</p>
+                    </div>
+                    <div class="card-footer border-top-0 d-flex justify-content-between" style="background-color: transparent;">
+                        <button onclick="editarProducto(${prod.id}, '${prod.titulo}', ${prod.precio}, ${prod.stock}, '${prod.categoria}', '${prod.descripcion}')" class="btn btn-sm btn-outline-primary">Editar</button>
+                        ${botonAccion}
+                    </div>
+                </div>
+            </div>`;
+  });
+
+  contenedor.innerHTML = html;
+
+  // Poblar dropdown de categorías del modal
+  const datalistCategorias = document.getElementById("listaCategorias");
+  if (datalistCategorias) {
+    datalistCategorias.innerHTML = Array.from(categoriasUnicas)
+      .map((c) => `<option value="${c}">`)
+      .join("");
+  }
+}
+
+// Botones de paginación
+function cambiarCategoria(nuevaCategoria) {
+  categoriaActual = nuevaCategoria;
+  paginaActual = 1;
+  actualizarVista();
+}
+
+function cambiarPagina(delta) {
+  paginaActual += delta;
+  actualizarVista();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// Inicialización de la vista
 cargarInfoTienda();
+cargarProductos();

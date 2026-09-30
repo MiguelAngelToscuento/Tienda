@@ -1,11 +1,12 @@
 package toscuento.sistema.store.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "usuarios")
 public class Usuario {
-    //atributos de la clase usuarios
+    // atributos de la clase usuarios
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -13,18 +14,18 @@ public class Usuario {
     @Column
     private String correo;
 
-    @Column
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String contrasena;
 
     @Column
     private Integer estado = 1;
 
-    //muchos usuarios pueden tener el mismo rol
+    // muchos usuarios pueden tener el mismo rol
     @ManyToOne
     @JoinColumn(name = "id_rol", nullable = false)
     private Rol rol;
 
-    //metodos getters y setters de la clase usuarios
+    // metodos getters y setters de la clase usuarios
 
     public Integer getId() {
         return id;

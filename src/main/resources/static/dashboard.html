@@ -12,88 +12,118 @@
 </head>
 
 <body style="background-color: #f4f6f9">
-<!-- Barra de navegación del panel -->
-<header class="top-nav d-flex justify-content-between align-items-center">
-    <div class="d-flex align-items-center">
-        <img id="imgLogoTienda" src="" alt="Logo" style="height: 40px; width: 40px; border-radius: 5px; display: none; margin-right: 15px; object-fit: cover;">
-        <h2 id="textoNombreTienda" class="logo m-0">Mi Tienda</h2>
+    <!-- Barra de navegación del panel -->
+    <header class="top-nav d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+            <img id="imgLogoTienda" src="" alt="Logo"
+                style="height: 40px; width: 40px; border-radius: 5px; display: none; margin-right: 15px; object-fit: cover;">
+            <h2 id="textoNombreTienda" class="logo m-0">Mi Tienda</h2>
+        </div>
+        <button id="btnCerrarSesion" class="btn btn-outline-danger" style="width: auto;">Cerrar sesión</button>
+    </header>
+
+    <!-- Contenedor principal de gestión -->
+    <div class="container mt-5"
+        style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+
+        <!-- Cabecera de controles -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 id="tituloDashboard">Gestión de Inventario</h3>
+            <div>
+                <button class="btn btn-outline-secondary me-2" id="btnVerOrdenes">📦 Ver Pedidos Recibidos</button>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                    data-bs-target="#modalAgregarProducto" id="btnAgregarProd">
+                    + Agregar Producto
+                </button>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4 bg-light p-3 rounded border">
+            <!-- Filtro por Categoría -->
+            <div class="d-flex align-items-center">
+                <label for="filtroCategoria" class="form-label mb-0 me-2 fw-bold">Categoría:</label>
+                <select id="filtroCategoria" class="form-select w-auto" onchange="cambiarCategoria(this.value)">
+                    <option value="Todas">Todas</option>
+                    <option value="Computación">Computación</option>
+                    <option value="Telefonía">Telefonía</option>
+                    <option value="Audio">Audio</option>
+                    <option value="Videojuegos">Videojuegos</option>
+                    <option value="Electrónica">Electrónica</option>
+                    <option value="Herramientas">Herramientas</option>
+                    <option value="Hogar">Hogar</option>
+                    <option value="Ropa">Ropa</option>
+                </select>
+            </div>
+
+            <!-- Controles de Paginación -->
+            <div class="btn-group">
+                <button id="btnAnterior" class="btn btn-outline-primary" onclick="cambiarPagina(-1)">Anterior</button>
+                <span class="btn btn-light text-dark fw-bold disabled" id="indicadorPagina">Página 1 de 1</span>
+                <button id="btnSiguiente" class="btn btn-outline-primary" onclick="cambiarPagina(1)">Siguiente</button>
+            </div>
+        </div>
+
+        <!-- Contenedores dinámicos para productos y pedidos -->
+        <div class="row" id="listaProductos"></div>
+        <div class="row" id="listaPedidosRecibidos" style="display: none;"></div>
     </div>
-    <button id="btnCerrarSesion" class="btn btn-outline-danger" style="width: auto;">Cerrar sesión</button>
-</header>
 
-<!-- Contenedor principal de gestión -->
-<div class="container mt-5" style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+    <!-- Ventana emergente (Modal) para registrar/editar artículo -->
+    <div class="modal fade" id="modalAgregarProducto" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tituloModalProducto">Registrar un Artículo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
 
-    <!-- Cabecera de controles -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 id="tituloDashboard">Gestión de Inventario</h3>
-        <div>
-            <button class="btn btn-outline-secondary me-2" id="btnVerOrdenes">📦 Ver Pedidos Recibidos</button>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalAgregarProducto" id="btnAgregarProd">
-                + Agregar Producto
-            </button>
+                <div class="modal-body">
+                    <!-- Formulario de producto -->
+                    <form id="formProducto">
+                        <input type="hidden" id="prodId">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre del producto:</label>
+                            <input type="text" class="form-control" id="prodNombre" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Precio ($):</label>
+                                <input type="number" step="0.01" class="form-control" id="prodPrecio" required>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Cantidad (Stock):</label>
+                                <input type="number" class="form-control" id="prodStock" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Categoría:</label>
+                            <input type="text" class="form-control" list="listaCategorias" id="prodCategoria"
+                                placeholder="Escribe o selecciona una categoría" required>
+                            <datalist id="listaCategorias"></datalist>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Descripción:</label>
+                            <textarea class="form-control" id="prodDescripcion" rows="2" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Imagen del producto:</label>
+                            <input type="file" class="form-control" id="prodImagen" accept="image/*">
+                        </div>
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <!-- El botón envía el formulario formProducto -->
+                    <button type="submit" form="formProducto" class="btn btn-success" id="btnGuardarProd">Guardar
+                        Producto</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Contenedores dinámicos para productos y pedidos -->
-    <div class="row" id="listaProductos"></div>
-    <div class="row" id="listaPedidosRecibidos" style="display: none;"></div>
-</div>
-
-<!-- Ventana emergente (Modal) para registrar/editar artículo -->
-<div class="modal fade" id="modalAgregarProducto" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="tituloModalProducto">Registrar un Artículo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-
-            <div class="modal-body">
-                <!-- Formulario de producto -->
-                <form id="formProducto">
-                    <input type="hidden" id="prodId">
-                    <div class="mb-3">
-                        <label class="form-label">Nombre del producto:</label>
-                        <input type="text" class="form-control" id="prodNombre" required>
-                    </div>
-                    <div class="row">
-                        <div class="col-6 mb-3">
-                            <label class="form-label">Precio ($):</label>
-                            <input type="number" step="0.01" class="form-control" id="prodPrecio" required>
-                        </div>
-                        <div class="col-6 mb-3">
-                            <label class="form-label">Cantidad (Stock):</label>
-                            <input type="number" class="form-control" id="prodStock" required>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Categoría:</label>
-                        <input type="text" class="form-control" list="listaCategorias" id="prodCategoria" placeholder="Escribe o selecciona una categoría" required>
-                        <datalist id="listaCategorias"></datalist>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Descripción:</label>
-                        <textarea class="form-control" id="prodDescripcion" rows="2" required></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Imagen del producto:</label>
-                        <input type="file" class="form-control" id="prodImagen" accept="image/*">
-                    </div>
-                </form>
-            </div>
-
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <!-- El botón envía el formulario formProducto -->
-                <button type="submit" form="formProducto" class="btn btn-success" id="btnGuardarProd">Guardar Producto</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Lógica principal del panel de vendedor -->
-<script src="dashboard.js"></script>
+    <!-- Lógica principal del panel de vendedor -->
+    <script src="dashboard.js"></script>
 </body>
 
 </html>
