@@ -12,6 +12,18 @@
 
 <body style="background-color: #f4f6f9">
 
+    <!---contenedor de notificaciones flotantes-->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
+        <div id="toastNotification" class="toast align-items-center text-white border-0 shadow" role="alert"
+            aria-live="assertive" aria-atomic="true">
+            <div class="d-flex p-2">
+                <div class="toast-body fw-bold fs-6" id="toastMensaje">
+                    <!-- El mensaje aparecerá aquí -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Barra de navegación principal -->
     <header class="top-nav d-flex justify-content-between align-items-center p-3 bg-white shadow-sm sticky-top">
         <h2 class="logo text-primary m-0">Fake shop</h2>
@@ -67,7 +79,7 @@
         <!-- Controles de paginación del catálogo -->
         <div class="d-flex justify-content-center align-items-center my-4 gap-3">
             <button id="btnAnterior" class="btn btn-outline-primary px-4" onclick="cambiarPagina(-1)">Anterior</button>
-            <span id="textoPaginacion" class="fw-bold text-secondary">Página 1 de 1</span>
+            <span id="textoPaginacion" class="fw-bold text-secondary text-nowrap">Página 1 de 1</span>
             <button id="btnSiguiente" class="btn btn-outline-primary px-4" onclick="cambiarPagina(1)">Siguiente</button>
         </div>
     </div>

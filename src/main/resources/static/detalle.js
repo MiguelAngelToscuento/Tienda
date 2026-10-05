@@ -22,20 +22,44 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("detalleCategoria").innerText = prod.categoria;
         document.getElementById("detalleTitulo").innerText = prod.titulo;
         document.title = prod.titulo + " - Fake Shop";
-        document.getElementById("detalleTienda").innerText =
-          prod.tienda && prod.tienda.nombreTienda
-            ? prod.tienda.nombreTienda
-            : "Vendedor independiente";
-        document.getElementById("detallePrecio").innerText =
-          prod.precio.toFixed(2);
+        const elementoTienda = document.getElementById("detalleTienda");
+        if (prod.tienda && prod.tienda.id && prod.tienda.nombreTienda) {
+          const nombreTiendaUrl = encodeURIComponent(
+            prod.tienda.nombreTienda.trim().toLowerCase().replace(/\s+/g, "-"),
+          );
+          elementoTienda.innerHTML = `<a href="perfil-tienda.html?id=${prod.tienda.id}&nombre=${nombreTiendaUrl}" class="text-primary text-decoration-none fw-bold" style="cursor: pointer;">${prod.tienda.nombreTienda}</a>`;
+        } else {
+          elementoTienda.innerHTML = `<span class="text-muted">Vendedor independiente</span>`;
+        }
+        document.getElementById("detallePrecio").innerText = formatearPrecio(
+          prod.precio,
+        );
         document.getElementById("detalleDescripcion").innerText =
           prod.descripcion || "Sin descripción adicional.";
         document.getElementById("detalleStock").innerText = prod.stock;
 
         //bton de agregar al carrito
+        actualizarVistaCarrito();
+        actualizarVistaFavoritos();
+
+        //estado inicial del boton de favoritos
+        const btnFavorito = document.getElementById("btnDetalleFavorito");
+        let esFav = favoritos.some((fav) => fav.id === prod.id);
+        btnFavorito.innerText = esFav ? "❤️" : "🤍";
+
+        //logica del bton agregar al carrito
         document.getElementById("btnDetalleAgregarCarrito").onclick = () => {
           agregarAlCarrito(prod.id, prod.titulo, prod.precio, prod.stock);
-          alert("Agregado al carrito exitosamente");
+          actualizarVistaCarrito();
+        };
+
+        //logica del boton de favoritos
+        btnFavorito.onclick = () => {
+          const imgFallback =
+            prod.urlImagen || "https://via.placeholder.com/200?text=Sin+Imagen";
+          toggleFavorito(prod.id, prod.titulo, prod.precio, imgFallback);
+          esFav = !esFav;
+          btnFavorito.innerText = esFav ? "❤️️" : "🤍";
         };
 
         // Preparar carga de reseñas y recomendaciones
@@ -86,7 +110,7 @@ function cargarRecomendadosIndependiente(categoria, idActual) {
                                 <div class="col-8">
                                     <div class="card-body p-2 px-3">
                                         <h6 class="card-title mb-1 text-truncate" style="font-size: 13px;">${prod.titulo}</h6>
-                                        <p class="text-success fw-bold m-0 fs-6">$${prod.precio.toFixed(2)}</p>
+                                        <p class="text-success fw-bold m-0 fs-6">$${formatearPrecio(prod.precio)}</p>
                                     </div>
                                 </div>
                             </div>
@@ -96,4 +120,10 @@ function cargarRecomendadosIndependiente(categoria, idActual) {
         contenedor.innerHTML = html;
       }
     });
+  function formatearPrecio(precio) {
+    return Number(precio).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  }
 }

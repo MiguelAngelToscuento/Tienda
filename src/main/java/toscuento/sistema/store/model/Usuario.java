@@ -14,6 +14,9 @@ public class Usuario {
     @Column
     private String correo;
 
+    @Column(name = "token_recuperacion")
+    private String tokenRecuperacion;
+
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String contrasena;
 
@@ -66,4 +69,13 @@ public class Usuario {
     public void setRol(Rol rol) {
         this.rol = rol;
     }
+
+    public String getTokenRecuperacion() {
+        return tokenRecuperacion;
+    }
+
+    public void setTokenRecuperacion(String tokenRecuperacion) {
+        this.tokenRecuperacion = tokenRecuperacion;
+    }
+
 }

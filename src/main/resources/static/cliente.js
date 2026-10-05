@@ -106,242 +106,237 @@ if (contenedorCatalogo) {
       actualizarUrlYRenderizar();
     });
   }
-
-  // Mostrar ventana emergente de pago
-  const btnPagar = document.getElementById("btnPagar");
-  if (btnPagar) {
-    btnPagar.addEventListener("click", function () {
-      if (carrito.length === 0) {
-        alert("El carrito está vacío");
-        return;
-      }
-
-      const offcanvasElement = document.getElementById("carritoLateral");
-      const offcanvasInstance =
-        bootstrap.Offcanvas.getInstance(offcanvasElement) ||
-        new bootstrap.Offcanvas(offcanvasElement);
-      offcanvasInstance.hide();
-
-      const total = carrito.reduce(
-        (sum, item) => sum + item.precio * item.cantidad,
-        0,
-      );
-      document.getElementById("checkoutTotal").innerText = total.toFixed(2);
-
-      const modalPago = new bootstrap.Modal(
-        document.getElementById("modalCheckout"),
-      );
-      modalPago.show();
-    });
-  }
-
-  // Alternar vistas según el método de pago seleccionado
-  const radiosPago = document.querySelectorAll(".opciones-pago");
-  const btnConfirmarCompra = document.getElementById("btnConfirmarCompra");
-
-  radiosPago.forEach((radio) => {
-    radio.addEventListener("change", function () {
-      document.getElementById("cajaTarjeta").style.display =
-        this.value === "Tarjeta" ? "block" : "none";
-      document.getElementById("cajaPaypal").style.display =
-        this.value === "PayPal" ? "block" : "none";
-      document.getElementById("cajaOxxo").style.display =
-        this.value === "Oxxo" ? "block" : "none";
-
-      if (btnConfirmarCompra) {
-        btnConfirmarCompra.style.display =
-          this.value === "PayPal" ? "none" : "block";
-      }
-    });
-  });
-
-  // Registrar la orden de compra en la base de datos
-  function guardarOrdenEnBaseDeDatos(metodoElegido) {
-    const clienteId = localStorage.getItem("clienteId");
-    if (!clienteId) {
-      alert(
-        "Error: No se encontró tu perfil de cliente. Por favor inicia sesión",
-      );
+}
+// Mostrar ventana emergente de pago
+const btnPagar = document.getElementById("btnPagar");
+if (btnPagar) {
+  btnPagar.addEventListener("click", function () {
+    if (carrito.length === 0) {
+      alert("El carrito está vacío");
       return;
     }
 
-    const nuevaOrden = {
-      cliente: { id: parseInt(clienteId) },
-      total: carrito.reduce(
-        (sum, item) => sum + item.precio * item.cantidad,
-        0,
-      ),
-      metodoPago: metodoElegido,
-      detalles: carrito.map((item) => ({
-        producto: { id: parseInt(item.id) },
-        cantidad: parseInt(item.cantidad),
-        precioUnitario: parseFloat(item.precio),
-      })),
-    };
+    const offcanvasElement = document.getElementById("carritoLateral");
+    const offcanvasInstance =
+      bootstrap.Offcanvas.getInstance(offcanvasElement) ||
+      new bootstrap.Offcanvas(offcanvasElement);
+    offcanvasInstance.hide();
 
-    fetch("http://localhost:8080/orden/save", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(nuevaOrden),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          if (metodoElegido === "Oxxo") {
-            alert(
-              "¡Orden generada! proximamente se habilitará un código de barras para completar el pago.",
-            );
-          } else {
-            alert(
-              "¡Pago aprobado! Compra realizada con éxito, tu pedido está en camino.",
-            );
-          }
-          carrito = [];
-          guardarCarrito();
-          window.location.reload();
-        } else {
-          alert("Hubo un problema al procesar el pago: " + data.message);
-        }
-      })
-      .catch((error) => console.error("Error al procesar la compra: ", error));
+    const total = carrito.reduce(
+      (sum, item) => sum + item.precio * item.cantidad,
+      0,
+    );
+    document.getElementById("checkoutTotal").innerText = formatearPrecio(total);
+
+    const modalPago = new bootstrap.Modal(
+      document.getElementById("modalCheckout"),
+    );
+    modalPago.show();
+  });
+}
+
+// Alternar vistas según el método de pago seleccionado
+const radiosPago = document.querySelectorAll(".opciones-pago");
+const btnConfirmarCompra = document.getElementById("btnConfirmarCompra");
+
+radiosPago.forEach((radio) => {
+  radio.addEventListener("change", function () {
+    document.getElementById("cajaTarjeta").style.display =
+      this.value === "Tarjeta" ? "block" : "none";
+    document.getElementById("cajaPaypal").style.display =
+      this.value === "PayPal" ? "block" : "none";
+    document.getElementById("cajaOxxo").style.display =
+      this.value === "Oxxo" ? "block" : "none";
+
+    if (btnConfirmarCompra) {
+      btnConfirmarCompra.style.display =
+        this.value === "PayPal" ? "none" : "block";
+    }
+  });
+});
+
+// Registrar la orden de compra en la base de datos
+function guardarOrdenEnBaseDeDatos(metodoElegido) {
+  const clienteId = localStorage.getItem("clienteId");
+  if (!clienteId) {
+    alert(
+      "Error: No se encontró tu perfil de cliente. Por favor inicia sesión",
+    );
+    return;
   }
 
-  // Procesar pago con Tarjeta u Oxxo
-  if (btnConfirmarCompra) {
-    btnConfirmarCompra.addEventListener("click", function () {
-      const metodoElegido = document.querySelector(
-        'input[name="metodoPago"]:checked',
-      ).value;
-      btnConfirmarCompra.innerText = "Procesando pago...";
-      btnConfirmarCompra.disabled = true;
-      guardarOrdenEnBaseDeDatos(metodoElegido);
-    });
-  }
-
-  // Inyección de botones de pago con PayPal
-  if (window.paypal) {
-    paypal
-      .Buttons({
-        createOrder: function (data, actions) {
-          const totalCarrito = carrito
-            .reduce((sum, item) => sum + item.precio * item.cantidad, 0)
-            .toFixed(2);
-          return actions.order.create({
-            purchase_units: [
-              {
-                amount: { value: totalCarrito },
-              },
-            ],
-          });
-        },
-        onApprove: function (data, actions) {
-          return actions.order.capture().then(function (detallesPago) {
-            console.log("Pago exitoso vía PayPal:", detallesPago);
-            guardarOrdenEnBaseDeDatos("PayPal");
-          });
-        },
-        onError: function (err) {
-          console.error("Error en el pago con PayPal", err);
-          alert(
-            "El pago fue cancelado o hubo un error de conexión con PayPal.",
-          );
-        },
-      })
-      .render("#paypal-button-container");
-  }
-
-  // Aplicar filtro por categoría
-  window.aplicarFiltro = function (categoria) {
-    filtroActivo = categoria;
-    paginaActual = 1;
-    actualizarUrlYRenderizar();
+  const nuevaOrden = {
+    cliente: { id: parseInt(clienteId) },
+    total: carrito.reduce((sum, item) => sum + item.precio * item.cantidad, 0),
+    metodoPago: metodoElegido,
+    detalles: carrito.map((item) => ({
+      producto: { id: parseInt(item.id) },
+      cantidad: parseInt(item.cantidad),
+      precioUnitario: parseFloat(item.precio),
+    })),
   };
 
-  // Actualizar URL con parámetros de búsqueda y renderizar
-  function actualizarUrlYRenderizar() {
-    const params = new URLSearchParams();
-    if (filtroActivo) params.set("categoria", filtroActivo);
-    if (busquedaActiva) params.set("q", busquedaActiva);
-    if (paginaActual > 1) params.set("pagina", paginaActual);
-
-    const nuevaUrl =
-      window.location.pathname +
-      (params.toString() ? "?" + params.toString() : "");
-    window.history.pushState({ path: nuevaUrl }, "", nuevaUrl);
-
-    ejecutarFiltroLocales();
-    renderizarFiltros();
-  }
-
-  // Filtrar lista de productos localmente
-  function ejecutarFiltroLocales() {
-    let filtrados = productosGlobales;
-
-    if (filtroActivo) {
-      filtrados = filtrados.filter((p) => p.categoria === filtroActivo);
-    }
-    if (busquedaActiva) {
-      const texto = busquedaActiva.toLowerCase();
-      filtrados = filtrados.filter(
-        (p) =>
-          p.titulo.toLowerCase().includes(texto) ||
-          p.categoria.toLowerCase().includes(texto),
-      );
-    }
-
-    renderizarProductos(filtrados);
-  }
-
-  // Leer parámetros de la URL al cargar la página
-  function leerUrlYFiltrar() {
-    const params = new URLSearchParams(window.location.search);
-    filtroActivo = params.get("categoria") || "";
-    busquedaActiva = params.get("q") || "";
-    paginaActual = parseInt(params.get("pagina")) || 1;
-
-    const inputB = document.getElementById("inputBusqueda");
-    if (inputB) inputB.value = busquedaActiva;
-
-    ejecutarFiltroLocales();
-    renderizarFiltros();
-  }
-
-  // Detectar navegación del navegador (botones atrás/adelante)
-  window.addEventListener("popstate", () => {
-    leerUrlYFiltrar();
-  });
-
-  // Dibujar botones de categorías en pantalla
-  function renderizarFiltros() {
-    const contenedor = document.getElementById("contenedorFiltros");
-    if (!contenedor) return;
-    const categorias = [...new Set(productosGlobales.map((p) => p.categoria))];
-    let html = `<button class="btn btn-${filtroActivo === "" ? "primary" : "outline-primary"} text-nowrap" onclick="aplicarFiltro('')">Todas</button>`;
-    categorias.forEach((cat) => {
-      if (!cat) return;
-      const btnClass = filtroActivo === cat ? "primary" : "outline-primary";
-      html += `<button class="btn btn-${btnClass} text-nowrap" onclick="aplicarFiltro('${cat}')">${cat}</button>`;
-    });
-    contenedor.innerHTML = html;
-  }
-
-  // Obtener todos los productos desde el servidor
-  function cargarCatalogoCompleto() {
-    fetch("http://localhost:8080/producto/findAll")
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          productosGlobales = data.data;
-          leerUrlYFiltrar();
-          actualizarVistaCarrito();
-          actualizarVistaFavoritos();
+  fetch("http://localhost:8080/orden/save", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(nuevaOrden),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        if (metodoElegido === "Oxxo") {
+          alert(
+            "¡Orden generada! proximamente se habilitará un código de barras para completar el pago.",
+          );
+        } else {
+          alert(
+            "¡Pago aprobado! Compra realizada con éxito, tu pedido está en camino.",
+          );
         }
-      })
-      .catch((error) => console.error("Error al cargar el catálogo: ", error));
+        carrito = [];
+        guardarCarrito();
+        window.location.reload();
+      } else {
+        alert("Hubo un problema al procesar el pago: " + data.message);
+      }
+    })
+    .catch((error) => console.error("Error al procesar la compra: ", error));
+}
+
+// Procesar pago con Tarjeta u Oxxo
+if (btnConfirmarCompra) {
+  btnConfirmarCompra.addEventListener("click", function () {
+    const metodoElegido = document.querySelector(
+      'input[name="metodoPago"]:checked',
+    ).value;
+    btnConfirmarCompra.innerText = "Procesando pago...";
+    btnConfirmarCompra.disabled = true;
+    guardarOrdenEnBaseDeDatos(metodoElegido);
+  });
+}
+
+// Inyección de botones de pago con PayPal
+// Inyección de botones de pago con PayPal
+if (window.paypal && document.getElementById("paypal-button-container")) {
+  paypal
+    .Buttons({
+      createOrder: function (data, actions) {
+        const totalCarrito = carrito
+          .reduce((sum, item) => sum + item.precio * item.cantidad, 0)
+          .toFixed(2);
+        return actions.order.create({
+          purchase_units: [
+            {
+              amount: { value: totalCarrito },
+            },
+          ],
+        });
+      },
+      onApprove: function (data, actions) {
+        return actions.order.capture().then(function (detallesPago) {
+          console.log("Pago exitoso vía PayPal:", detallesPago);
+          guardarOrdenEnBaseDeDatos("PayPal");
+        });
+      },
+      onError: function (err) {
+        console.error("Error en el pago con PayPal", err);
+        alert("El pago fue cancelado o hubo un error de conexión con PayPal.");
+      },
+    })
+    .render("#paypal-button-container");
+}
+
+// Aplicar filtro por categoría
+window.aplicarFiltro = function (categoria) {
+  filtroActivo = categoria;
+  paginaActual = 1;
+  actualizarUrlYRenderizar();
+};
+
+// Actualizar URL con parámetros de búsqueda y renderizar
+function actualizarUrlYRenderizar() {
+  const params = new URLSearchParams();
+  if (filtroActivo) params.set("categoria", filtroActivo);
+  if (busquedaActiva) params.set("q", busquedaActiva);
+  if (paginaActual > 1) params.set("pagina", paginaActual);
+
+  const nuevaUrl =
+    window.location.pathname +
+    (params.toString() ? "?" + params.toString() : "");
+  window.history.pushState({ path: nuevaUrl }, "", nuevaUrl);
+
+  ejecutarFiltroLocales();
+  renderizarFiltros();
+}
+
+// Filtrar lista de productos localmente
+function ejecutarFiltroLocales() {
+  let filtrados = productosGlobales;
+
+  if (filtroActivo) {
+    filtrados = filtrados.filter((p) => p.categoria === filtroActivo);
+  }
+  if (busquedaActiva) {
+    const texto = busquedaActiva.toLowerCase();
+    filtrados = filtrados.filter(
+      (p) =>
+        p.titulo.toLowerCase().includes(texto) ||
+        p.categoria.toLowerCase().includes(texto),
+    );
   }
 
-  cargarCatalogoCompleto();
+  renderizarProductos(filtrados);
 }
+
+// Leer parámetros de la URL al cargar la página
+function leerUrlYFiltrar() {
+  const params = new URLSearchParams(window.location.search);
+  filtroActivo = params.get("categoria") || "";
+  busquedaActiva = params.get("q") || "";
+  paginaActual = parseInt(params.get("pagina")) || 1;
+
+  const inputB = document.getElementById("inputBusqueda");
+  if (inputB) inputB.value = busquedaActiva;
+
+  ejecutarFiltroLocales();
+  renderizarFiltros();
+}
+
+// Detectar navegación del navegador (botones atrás/adelante)
+window.addEventListener("popstate", () => {
+  leerUrlYFiltrar();
+});
+
+// Dibujar botones de categorías en pantalla
+function renderizarFiltros() {
+  const contenedor = document.getElementById("contenedorFiltros");
+  if (!contenedor) return;
+  const categorias = [...new Set(productosGlobales.map((p) => p.categoria))];
+  let html = `<button class="btn btn-${filtroActivo === "" ? "primary" : "outline-primary"} text-nowrap" onclick="aplicarFiltro('')">Todas</button>`;
+  categorias.forEach((cat) => {
+    if (!cat) return;
+    const btnClass = filtroActivo === cat ? "primary" : "outline-primary";
+    html += `<button class="btn btn-${btnClass} text-nowrap" onclick="aplicarFiltro('${cat}')">${cat}</button>`;
+  });
+  contenedor.innerHTML = html;
+}
+
+// Obtener todos los productos desde el servidor
+function cargarCatalogoCompleto() {
+  fetch("http://localhost:8080/producto/findAll")
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        productosGlobales = data.data;
+        leerUrlYFiltrar();
+        actualizarVistaCarrito();
+        actualizarVistaFavoritos();
+      }
+    })
+    .catch((error) => console.error("Error al cargar el catálogo: ", error));
+}
+
+cargarCatalogoCompleto();
 
 // Dibujar tarjetas de productos con paginación
 function renderizarProductos(lista) {
@@ -375,6 +370,14 @@ function renderizarProductos(lista) {
         ? prod.tienda.nombreTienda
         : "Vendedor independiente";
 
+    // Crear el enlace dinámico a la tienda si existe un ID
+    let enlaceTienda = `<span class="text-muted">🏪 Vendedor independiente</span>`;
+    if (prod.tienda && prod.tienda.id && prod.tienda.nombreTienda) {
+      const nombreTiendaUrl = encodeURIComponent(
+        prod.tienda.nombreTienda.trim().toLowerCase().replace(/\s+/g, "-"),
+      );
+      enlaceTienda = `<a href="perfil-tienda.html?id=${prod.tienda.id}&nombre=${nombreTiendaUrl}" class="text-primary text-decoration-none" style="cursor: pointer;">${prod.tienda.nombreTienda}</a>`;
+    }
     html += `
         <div class="col-md-3 col-sm-6 mb-4">
             <div class="card h-100 shadow-sm border-0 position-relative">
@@ -383,22 +386,21 @@ function renderizarProductos(lista) {
                         style="top: 10px; right: 10px; border-radius: 50%; width: 40px; height: 40px; z-index: 10;">
                     ${corazonEmoji}
                 </button>
-                <img src="${imagen}" class="card-img-top p-2" alt="${prod.titulo}" style="height: 200px; object-fit: contain; background-color: #ffffff; width: 100%; cursor: pointer;" onclick="abrirDetalleProducto(${prod.id})">
+                <img src="${imagen}" class="card-img-top p-2" alt="${prod.titulo}" style="height: 200px; object-fit: contain; background-color: #ffffff; width: 100\%; cursor: pointer;" onclick="abrirDetalleProducto(${prod.id})">
                 <div class="card-body pb-2">
                     <span class="badge bg-secondary mb-2">${prod.categoria}</span>
                     <h6 class="card-title text-truncate mb-1" style="cursor: pointer;" onclick="abrirDetalleProducto(${prod.id})">${prod.titulo}</h6>
-                    <p class="small text-primary mb-2 fw-bold text-truncate" title="Vendido por: ${nombreTienda}">
-                       🏪 ${nombreTienda}
-                    </p>
-                    <p class="text-success fw-bold fs-5 mb-1">$${prod.precio.toFixed(2)}</p>
-                    <p class="text-muted small mb-0">Stock: ${prod.stock} disponibles</p>
+                    
+                    <!-- Aquí imprimimos la variable que contiene el enlace construido -->
+                    <p class="small mb-2 fw-bold text-truncate" title="Vendido por: ${nombreTienda}">
+                       ${enlaceTienda}                     </p>                                          <p class="text-success fw-bold fs-5 mb-1">$${formatearPrecio(prod.precio)}</p>
+                    <p class="text-muted small mb-0">${prod.stock} disponibles</p>
                 </div>
                 <div class="card-footer bg-white border-0 d-grid">
-                    <button onclick="agregarAlCarrito(${prod.id}, '${prod.titulo}', ${prod.precio}, ${prod.stock})" class="btn btn-primary btn-sm">Agregar al carrito</button>
+                    <button onclick="agregarAlCarrito(${prod.id}, '${prod.titulo}', ${prod.precio},${prod.stock})" class="btn btn-primary btn-sm">Agregar al carrito</button>
                 </div>
             </div>
-        </div>
-    `;
+        </div>`;
   });
 
   contenedor.innerHTML = html;
@@ -435,6 +437,7 @@ function agregarAlCarrito(id, titulo, precio, stock) {
     carrito.push({ id, titulo, precio, cantidad: 1, stockMaximo: stock });
   }
   guardarCarrito();
+  mostarNotificacion("¡Producto agregado a tu carrito!", "bg-success");
 }
 
 // Modificar la cantidad de un producto en el carrito
@@ -465,29 +468,50 @@ function actualizarVistaCarrito() {
   const spanTotal = document.getElementById("totalCarrito");
   const badgeCarrito = document.getElementById("badgeCarrito");
 
-  if (!contenedor) return;
-
-  if (carrito.length === 0) {
-    contenedor.innerHTML =
-      '<p class="text-muted text-center mt-4">El carrito está vacío</p>';
-    spanTotal.innerText = "0.00";
-    badgeCarrito.innerText = "0";
-    return;
-  }
-
-  let html = "";
+  // 1. Calculamos los totales primero
   let total = 0;
   let cantidadTotal = 0;
-
   carrito.forEach((item) => {
     total += item.precio * item.cantidad;
     cantidadTotal += item.cantidad;
+  });
+
+  // 2. Actualizamos la burbuja roja en cualquier pantalla
+  if (badgeCarrito) badgeCarrito.innerText = cantidadTotal;
+
+  // 3. Si no hay menú lateral (offcanvas) en esta pantalla, nos detenemos aquí
+  if (!contenedor) return;
+
+  // 4. Si el carrito está vacío, mostramos el mensaje
+  if (carrito.length === 0) {
+    contenedor.innerHTML =
+      '<p class="text-muted text-center mt-4">El carrito está vacío</p>';
+    if (spanTotal) spanTotal.innerText = "0.00";
+    return;
+  }
+
+  // 5. Si hay productos, construimos la lista visual
+  let html = "";
+  carrito.forEach((item) => {
+    // Intentamos buscar la imagen original; si no está cargada, usamos un placeholder genérico
+    const productoBase = productosGlobales.find((p) => p.id === item.id);
+    const imagen =
+      productoBase && productoBase.urlImagen
+        ? productoBase.urlImagen
+        : "https://placehold.co/100x100/eeeeee/333333?text=Articulo";
+
     html += `
         <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-            <div style="width: 60%">
-                <h6 class="mb-0 text-truncate">${item.titulo}</h6>
-                <small class="text-muted">$${item.precio.toFixed(2)} c/u</small>
+            <!-- Izquierda: Imagen y Textos -->
+            <div class="d-flex align-items-center" style="width: 65%">
+                <img src="${imagen}" alt="${item.titulo}" style="width: 45px; height: 45px; object-fit: contain; background-color: #ffffff;" class="rounded border me-2 p-1">
+                <div class="overflow-hidden">
+                    <h6 class="mb-0 text-truncate" style="font-size: 0.9rem;" title="${item.titulo}">${item.titulo}</h6>
+                    <small class="text-muted">$${formatearPrecio(item.precio)} c/u</small>
+                </div>
             </div>
+            
+            <!-- Derecha: Botones de cantidad -->
             <div class="d-flex align-items-center">
                 <button onclick="cambiarCantidad(${item.id}, -1)" class="btn btn-sm btn-outline-secondary px-2">-</button>
                 <span class="mx-2 fw-bold">${item.cantidad}</span>
@@ -497,9 +521,9 @@ function actualizarVistaCarrito() {
     `;
   });
 
+  // 6. Imprimimos el resultado en el menú lateral
   contenedor.innerHTML = html;
-  spanTotal.innerText = total.toFixed(2);
-  badgeCarrito.innerText = cantidadTotal;
+  if (spanTotal) spanTotal.innerText = formatearPrecio(total);
 }
 
 // Obtener y mostrar el historial de pedidos del cliente
@@ -511,6 +535,7 @@ function cargarMisCompras() {
     .then((response) => response.json())
     .then((data) => {
       const contenedor = document.getElementById("listaMisCompras");
+      if (!contenedor) return;
 
       if (data.success && data.data.length > 0) {
         let html = "";
@@ -527,10 +552,20 @@ function cargarMisCompras() {
               let nombreProd = item.producto
                 ? item.producto.titulo
                 : "Producto";
+              let imagenProd =
+                item.producto && item.producto.urlImagen
+                  ? item.producto.urlImagen
+                  : "https://placehold.co/100x100/eeeeee/333333?text=Sin+Imagen";
+              let idProd = item.producto ? item.producto.id : 0;
+
               listaArticulos += `
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-1 border-0" style="font-size: 14px;">
-                        <span><span class="badge bg-light text-dark border me-2">${item.cantidad}x</span> ${nombreProd}</span>
-                        <span class="text-muted">$${(item.cantidad * item.precioUnitario).toFixed(2)}</span>
+                    <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center px-2 py-2" style="font-size: 14px; cursor: pointer;" onclick="abrirDetalleProducto(${idProd})">
+                        <div class="d-flex align-items-center" style="width: 75%;">
+                            <span class="badge bg-light text-dark border me-2">${item.cantidad}x</span>
+                            <img src="${imagenProd}" alt="${nombreProd}" style="width: 40px; height: 40px; object-fit: contain; background-color: #ffffff;" class="rounded border me-2 p-1">
+                            <span class="text-truncate" title="${nombreProd}">${nombreProd}</span>
+                        </div>
+                        <span class="text-muted fw-bold">$${formatearPrecio(item.cantidad * item.precioUnitario)}</span>
                     </li>`;
             });
           } else {
@@ -548,7 +583,7 @@ function cargarMisCompras() {
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-md-8">
-                            <p class="mb-1 fw-bold">Total Pagado: $${orden.total.toFixed(2)}</p>
+                            <p class="mb-1 fw-bold">Total Pagado: $${formatearPrecio(orden.total)}</p>
                             <p class="text-muted small mb-0">Método de pago: ${orden.metodoPago || "No especificado"}</p>
                         </div>
                         <div class="col-md-4 text-end">
@@ -590,26 +625,34 @@ function toggleFavorito(id, titulo, precio, imagen) {
   if (requiereSesion()) return;
   const index = favoritos.findIndex((fav) => fav.id === id);
 
+  let mensajeToast = "";
+  let colorToast = "";
+
   if (index > -1) {
     favoritos.splice(index, 1);
+    mensajeToast = "Producto eliminado de favoritos";
+    colorToast = "bg-secondary";
   } else {
     favoritos.push({ id, titulo, precio, imagen });
+    mensajeToast = "¡Producto guardado en favoritos!";
+    colorToast = "bg-success";
   }
 
   localStorage.setItem("favoritos", JSON.stringify(favoritos));
-
-  ejecutarFiltroLocales();
+  if (document.getElementById("catalogoGlobal")) {
+    ejecutarFiltroLocales();
+  }
   actualizarVistaFavoritos();
+
+  mostarNotificacion(mensajeToast, colorToast);
 }
 
 // Actualizar interfaz visual de favoritos
 function actualizarVistaFavoritos() {
   const contenedor = document.getElementById("listaFavoritos");
   const badge = document.getElementById("badgeFavoritos");
-
+  if (badge) badge.innerText = favoritos.length;
   if (!contenedor) return;
-
-  badge.innerText = favoritos.length;
 
   if (favoritos.length === 0) {
     contenedor.innerHTML =
@@ -628,7 +671,7 @@ function actualizarVistaFavoritos() {
                 <div class="col-8">
                     <div class="card-body p-2">
                         <h6 class="card-title text-truncate mb-1 small">${item.titulo}</h6>
-                        <p class="text-success fw-bold mb-1 small">$${item.precio.toFixed(2)}</p>
+                        <p class="text-success fw-bold mb-1 small">$${formatearPrecio(item.precio)}</p>
                         <div class="d-flex justify-content-between mt-2">
                             <button onclick="toggleFavorito(${item.id})" class="btn btn-sm btn-outline-danger" style="font-size: 11px;">Eliminar</button>
                             <button onclick="agregarAlCarrito(${item.id}, '${item.titulo}', ${item.precio}, 99)" class="btn btn-sm btn-primary" style="font-size: 11px;">Al carrito</button>
@@ -774,4 +817,40 @@ function renderizarRecomendados(categoria, idActual) {
         `;
   });
   contenedor.innerHTML = html;
+}
+
+//función para mostar notificaciones
+function mostarNotificacion(mensaje, colorFondo) {
+  const toastElement = document.getElementById("toastNotification");
+  const toastMensaje = document.getElementById("toastMensaje");
+
+  //asignar el mensaje
+  toastMensaje.innerText = mensaje;
+
+  //limpiar clases de color anteriores y aplicar el nuevo color
+  toastElement.className = `toast align-items-center text-white border-0 ${colorFondo}`;
+  //mostrar el toast con duración de 3 segundos
+  const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
+  toast.show();
+}
+
+//cargar productos en memoria para pantallas
+if (!document.getElementById("catalogoGlobal")) {
+  fetch("http://localhost:8080/producto/findAll")
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        productosGlobales = data.data;
+        actualizarVistaCarrito();
+      }
+    })
+    .catch((error) =>
+      console.error("Error cargando productos para el carrito: ", error),
+    );
+}
+function formatearPrecio(precio) {
+  return Number(precio).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 }

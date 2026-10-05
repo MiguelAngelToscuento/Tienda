@@ -126,3 +126,47 @@ document.getElementById("formLogin").addEventListener("submit", function (e) {
     })
     .catch((error) => console.error("Error en el login: ", error));
 });
+
+const btnRecuperar = document.getElementById("btnEnviarRecuperacion");
+
+if (btnRecuperar) {
+  btnRecuperar.addEventListener("click", function () {
+    const email = document.getElementById("inputCorreoRecuperacion").value;
+
+    if (!email) {
+      alert("Por favor, ingresa tu correo electrónico.");
+      return;
+    }
+
+    // Cambiar el botón a estado de carga para evitar doble clic
+    btnRecuperar.innerText = "Enviando...";
+    btnRecuperar.disabled = true;
+
+    fetch("http://localhost:8080/usuario/solicitar-recuperacion", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          alert(
+            "¡Éxito! Revisa tu bandeja de entrada o spam. Te hemos enviado una contraseña temporal.",
+          );
+          // Ocultar modal limpiamente
+          const modalElement = document.getElementById("modalRecuperar");
+          const modalInstancia = bootstrap.Modal.getInstance(modalElement);
+          modalInstancia.hide();
+        } else {
+          alert("Error: " + data.message);
+        }
+      })
+      .catch((error) => console.error("Error al recuperar:", error))
+      .finally(() => {
+        // Restaurar el botón
+        btnRecuperar.innerText = "Enviar Correo";
+        btnRecuperar.disabled = false;
+        document.getElementById("inputCorreoRecuperacion").value = "";
+      });
+  });
+}

@@ -330,8 +330,6 @@ function actualizarVista() {
   nuevaUrl.searchParams.set("pagina", paginaActual);
   window.history.pushState({}, "", nuevaUrl);
 
-  // Dibujar HTML
-  // CORRECCIÓN: Usar ID "listaProductos" que existe en el dashboard
   const contenedor = document.getElementById("listaProductos");
 
   if (productosPagina.length === 0) {
@@ -365,8 +363,9 @@ function actualizarVista() {
                     ${badgeEtiqueta}
                     <img src="${imagen}" class="card-img-top p-2" alt="${prod.titulo}" style="height: 200px; object-fit: contain; background-color: #ffffff; width: 100%;">
                     <div class="card-body">
-                        <h5 class="card-title text-truncate" title="${prod.titulo}">${prod.titulo}</h5>
-                        <p class="card-text text-muted mb-1">Precio: $${prod.precio.toFixed(2)}</p>
+                        <!-- Aquí aplicamos el límite de 2 líneas y ajustamos un poco el tamaño del texto -->
+                        <h3 class="card-title fs-6 fw-bold" title="${prod.titulo}" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.5em;">${prod.titulo}</h3>
+                        <p class="card-text text-muted mb-1">Precio: $${formatearPrecio(prod.precio)}</p>
                         <p class="card-text text-muted">Stock: ${prod.stock} unidades</p>
                     </div>
                     <div class="card-footer border-top-0 d-flex justify-content-between" style="background-color: transparent;">
@@ -400,7 +399,12 @@ function cambiarPagina(delta) {
   actualizarVista();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
-
+function formatearPrecio(precio) {
+  return Number(precio).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
 // Inicialización de la vista
 cargarInfoTienda();
 cargarProductos();

@@ -1,20 +1,23 @@
 package toscuento.sistema.store.controller;
 
+import org.aspectj.internal.lang.annotation.ajcITD;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import toscuento.sistema.store.Repository.UsuarioRepository;
 import toscuento.sistema.store.model.Usuario;
 import toscuento.sistema.store.service.UsuarioService;
-
+import org.springframework.mail.javamail.JavaMailSender;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/usuario")
@@ -29,6 +32,63 @@ public class UsuarioController {
     private UsuarioRepository usuarioRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private JavaMailSender mailSender;
+
+    @PostMapping("/solicitar-recuperacion")
+    public ResponseEntity<Map<String, Object>> solicitarRecuperacion(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        Usuario usuario = usuarioRepository.findByCorreo(email).orElse(null);
+        if (usuario == null) {
+            return createResponse(false, "No existe una cuenta con ese correo.", null, HttpStatus.NOT_FOUND);
+        }
+
+        // generar token
+        String token = UUID.randomUUID().toString();
+        usuario.setTokenRecuperacion(token);
+        usuarioRepository.save(usuario);
+
+        // crear enlace
+        String enlace = "http://localhost:8080/restablecer.html?token=" + token;
+
+        try {
+            // enviar correo con enlace
+            SimpleMailMessage mensaje = new SimpleMailMessage();
+            mensaje.setTo(email);
+            mensaje.setSubject("Fake Shop Reestablecer contraseña");
+            mensaje.setText("Hola,\n\nHaz clic en el siguiente enlace para crear tu nueva contraseña:\n"
+                    + enlace + "\n\nSi no solicitaste esto, ignora este correo.");
+            mailSender.send(mensaje);
+            return createResponse(true, "Te hemos enviado un enlace para restablecer tu contraseña.", null,
+                    HttpStatus.OK);
+        } catch (Exception e) {
+            return createError(e);
+        }
+    }
+
+    @PostMapping("/reestablecer-contraseña")
+    public ResponseEntity<Map<String, Object>> reestablecerContraseña(@RequestBody Map<String, String> payload) {
+        String token = payload.get("token");
+        String nuevaContraseña = payload.get("contraseña");
+        if (token == null || token.isEmpty()) {
+            return createResponse(false, "Token inválido.", null, HttpStatus.BAD_REQUEST);
+        }
+
+        // buscar el usuario que tenga el token
+        Usuario usuario = usuarioRepository.findByTokenRecuperacion(token).orElse(null);
+        if (usuario == null) {
+            return createResponse(false, "El enlace es inválido o ya fue utilizado.", null, HttpStatus.BAD_REQUEST);
+        }
+        try {
+            // encriptar nueva contraseña
+            usuario.setContrasena(passwordEncoder.encode(nuevaContraseña));
+            usuario.setTokenRecuperacion(null);
+            usuarioRepository.save(usuario);
+            return createResponse(true, "Tu contraseña ha sido actualizada con éxito.", null, HttpStatus.OK);
+        } catch (Exception e) {
+            return createError(e);
+        }
+    }
 
     @GetMapping("/findAll/")
     public ResponseEntity<Map<String, Object>> findAll() {

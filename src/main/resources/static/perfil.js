@@ -17,7 +17,8 @@ function cargarDatosPerfil() {
         const direccion = data.data.direccionEnvio || data.data.direccion || "";
 
         document.getElementById("perfilNombre").value = nombre;
-        document.getElementById("perfilTelefono").value = data.data.telefono || "";
+        document.getElementById("perfilTelefono").value =
+          data.data.telefono || "";
         document.getElementById("perfilDireccion").value = direccion;
       }
     })
@@ -25,31 +26,33 @@ function cargarDatosPerfil() {
 }
 
 // Guardar cambios del perfil
-document.getElementById("formEditarPerfil").addEventListener("submit", function (e) {
-  e.preventDefault();
+document
+  .getElementById("formEditarPerfil")
+  .addEventListener("submit", function (e) {
+    e.preventDefault();
 
-  const clienteActualizado = {
-    nombre: document.getElementById("perfilNombre").value,
-    telefono: document.getElementById("perfilTelefono").value,
-    direccion: document.getElementById("perfilDireccion").value,
-  };
+    const clienteActualizado = {
+      nombre: document.getElementById("perfilNombre").value,
+      telefono: document.getElementById("perfilTelefono").value,
+      direccion: document.getElementById("perfilDireccion").value,
+    };
 
-  fetch(`http://localhost:8080/cliente/update/${clienteId}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(clienteActualizado),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.success) {
-        alert("¡Tus datos han sido actualizados exitosamente!");
-        cargarDatosPerfil();
-      } else {
-        alert("Hubo un error al actualizar: " + data.message);
-      }
+    fetch(`http://localhost:8080/cliente/update/${clienteId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(clienteActualizado),
     })
-    .catch((error) => console.error("Error al guardar perfil:", error));
-});
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          alert("¡Tus datos han sido actualizados exitosamente!");
+          cargarDatosPerfil();
+        } else {
+          alert("Hubo un error al actualizar: " + data.message);
+        }
+      })
+      .catch((error) => console.error("Error al guardar perfil:", error));
+  });
 
 // Mostrar historial de compras
 function cargarHistorialPerfil() {
@@ -71,11 +74,40 @@ function cargarHistorialPerfil() {
           let listaArticulos = "";
           if (orden.detalles && orden.detalles.length > 0) {
             orden.detalles.forEach((item) => {
-              let nombreProd = item.producto ? item.producto.titulo : "Producto";
+              // Extraer datos incluyendo imagen e ID
+              let nombreProd = item.producto
+                ? item.producto.titulo
+                : "Producto";
+              let imagenProd =
+                item.producto && item.producto.urlImagen
+                  ? item.producto.urlImagen
+                  : "https://placehold.co/100x100/eeeeee/333333?text=Sin+Imagen";
+              let idProd = item.producto ? item.producto.id : 0;
+              let descProd =
+                item.producto && item.producto.descripcion
+                  ? item.producto.descripcion
+                  : "sin-descripcion";
+              let nombreUrl = encodeURIComponent(
+                nombreProd.trim().toLowerCase().replace(/\s+/g, "-"),
+              );
+
+              let descUrl = encodeURIComponent(
+                descProd
+                  .trim()
+                  .toLowerCase()
+                  .replace(/\s+/g, "-")
+                  .substring(0, 50),
+              );
+
+              // Estructura con imagen miniatura y evento onclick
               listaArticulos += `
-                <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-1 border-0" style="font-size: 14px;">
-                    <span><span class="badge bg-light text-dark border me-2">${item.cantidad}x</span> ${nombreProd}</span>
-                    <span class="text-muted">$${(item.cantidad * item.precioUnitario).toFixed(2)}</span>
+               <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center px-2 py-2" style="font-size: 14px; cursor: pointer;" onclick="window.location.href='detalle.html?id=${idProd}&nombre=${nombreUrl}&descripcion=${descUrl}'">
+                    <div class="d-flex align-items-center" style="width: 75%;">
+                        <span class="badge bg-light text-dark border me-2">${item.cantidad}x</span>
+                        <img src="${imagenProd}" alt="${nombreProd}" style="width: 40px; height: 40px; object-fit: contain; background-color: #ffffff;" class="rounded border me-2 p-1">
+                        <span class="text-truncate" title="${nombreProd}">${nombreProd}</span>
+                    </div>
+                    <span class="text-muted fw-bold">$${formatearPrecio(item.cantidad * item.precioUnitario)}</span>
                 </li>`;
             });
           } else {
@@ -83,13 +115,13 @@ function cargarHistorialPerfil() {
           }
 
           html += `
-            <div class="card shadow-sm border-0 border-start border-4 border-primary">
+            <div class="card shadow-sm border-0 border-start border-4 border-primary mb-3">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <small class="text-muted fw-bold">PEDIDO N° ${orden.id}</small>
                     <span class="badge ${colorEstado}">${orden.estadoEnvio || "Procesando"}</span>
                 </div>
                 <div class="card-body pb-2">
-                    <p class="mb-1 fw-bold">Total: $${orden.total.toFixed(2)} <span class="text-muted small fw-normal">(${orden.metodoPago || "No especificado"})</span></p>
+                    <p class="mb-1 fw-bold">Total: $${formatearPrecio(orden.total)}
                     <button onclick="toggleDetallesPerfil(${orden.id})" class="btn btn-sm btn-link p-0 text-decoration-none">Ver artículos comprados ↓</button>
 
                     <div id="detalles-perfil-${orden.id}" class="mt-2 pt-2 border-top" style="display: none;">
@@ -116,11 +148,18 @@ function toggleDetallesPerfil(idOrden) {
 }
 
 // Cerrar sesión del usuario
-document.getElementById("btnCerrarSesionPerfil").addEventListener("click", function () {
-  localStorage.clear();
-  window.location.href = "index.html";
-});
-
+document
+  .getElementById("btnCerrarSesionPerfil")
+  .addEventListener("click", function () {
+    localStorage.clear();
+    window.location.href = "index.html";
+  });
+function formatearPrecio(precio) {
+  return Number(precio).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
 // Inicialización de datos
 cargarDatosPerfil();
 cargarHistorialPerfil();
