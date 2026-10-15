@@ -43,7 +43,8 @@ document
       rol: { id: parseInt(rolSeleccionado) },
     };
 
-    fetch("http://localhost:8080/usuario/save", {
+    //fetch("http://localhost:8080/usuario/save", {
+    fetch("/usuario/save", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(nuevoUser),
@@ -74,7 +75,8 @@ document.getElementById("formLogin").addEventListener("submit", function (e) {
     contrasena: contrasena,
   };
 
-  fetch("http://localhost:8080/usuario/login", {
+  //fetch("http://localhost:8080/usuario/login", {
+  fetch("/usuario/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(credenciales),
@@ -91,7 +93,8 @@ document.getElementById("formLogin").addEventListener("submit", function (e) {
           window.location.href = "panel-admin.html";
         } else if (rolId === 2) {
           // Verificar si el vendedor ya tiene una tienda registrada
-          fetch(`http://localhost:8080/tienda/usuario/${data.data.id}`)
+          //fetch(`http://localhost:8080/tienda/usuario/${data.data.id}`)
+          fetch(`/tienda/usuario/${data.data.id}`)
             .then((res) => res.json())
             .then((tiendaData) => {
               if (tiendaData.success && tiendaData.data != null) {
@@ -106,7 +109,8 @@ document.getElementById("formLogin").addEventListener("submit", function (e) {
             );
         } else if (rolId === 3) {
           // Verificar si el comprador ya tiene datos de envío registrados
-          fetch(`http://localhost:8080/cliente/usuario/${data.data.id}`)
+          //          fetch(`http://localhost:8080/cliente/usuario/${data.data.id}`)
+          fetch(`/cliente/usuario/${data.data.id}`)
             .then((res) => res.json())
             .then((clienteData) => {
               if (clienteData.success && clienteData.data != null) {
@@ -142,7 +146,8 @@ if (btnRecuperar) {
     btnRecuperar.innerText = "Enviando...";
     btnRecuperar.disabled = true;
 
-    fetch("http://localhost:8080/usuario/solicitar-recuperacion", {
+    //fetch("http://localhost:8080/usuario/solicitar-recuperacion", {
+    fetch("/usuario/solicitar-recuperacion", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: email }),

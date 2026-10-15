@@ -31,6 +31,20 @@ public class Tienda {
     @Column(name = "activo", columnDefinition = "boolean default true")
     private Boolean activo = true;
 
+    @Transient
+    private Integer totalVentas = 0;
+
+    @Transient
+    private Double calificacionPromedio = 0.0;
+
+    public Double getCalificacionPromedio() {
+        return calificacionPromedio;
+    }
+
+    public void setCalificacionPromedio(Double calificacionPromedio) {
+        this.calificacionPromedio = calificacionPromedio;
+    }
+
     public Boolean getActivo() {
         return activo;
     }
@@ -85,5 +99,13 @@ public class Tienda {
 
     public void setUsuario(Usuario usuario) {
         this.usuario = usuario;
+    }
+
+    public Integer getTotalVentas() {
+        return totalVentas;
+    }
+
+    public void setTotalVentas(Integer totalVentas) {
+        this.totalVentas = totalVentas;
     }
 }

@@ -26,11 +26,18 @@
 
     <!-- Barra de navegación principal -->
     <header class="top-nav d-flex justify-content-between align-items-center p-3 bg-white shadow-sm sticky-top">
-        <h2 class="logo text-primary m-0">Fake shop</h2>
+        <!-- Logo con enlace al catálogo -->
+        <h2 class="logo text-primary m-0" style="cursor:pointer;" onclick="window.location.href='catalogo.html'">Fake
+            shop</h2>
 
         <!-- Buscador de productos -->
-        <div class="mx-auto" style="width: 35%;">
-            <input type="text" id="inputBusqueda" class="form-control" placeholder="Buscar productos o categorías">
+        <div class="mx-auto position-relative" style="width: 35%;">
+            <input type="text" id="inputBusqueda" class="form-control" placeholder="Buscar productos o categorías"
+                autocomplete="off">
+            <!--  Caja de sugerencias estilo YouTube (Oculta por defecto) -->
+            <div id="cajaSugerencias" class="list-group position-absolute w-100 shadow-sm"
+                style="display: none; z-index: 1050; max-height: 300px; overflow-y: auto;">
+            </div>
         </div>
 
         <!-- Botones de navegación y usuario -->
@@ -146,35 +153,55 @@
                         <label class="form-check-label fw-bold" for="pagoPaypal">PayPal</label>
                     </div>
                     <div class="form-check mb-4">
-                        <input class="form-check-input opciones-pago" type="radio" name="metodoPago" id="pagoOxxo"
-                            value="Oxxo">
-                        <label class="form-check-label fw-bold" for="pagoOxxo">Pago en efectivo (OXXO)</label>
+                        <input class="form-check-input opciones-pago" type="radio" name="metodoPago"
+                            id="pagoMercadoPago" value="MercadoPago">
+                        <label class="form-check-label fw-bold" for="pagoMercadoPago">Mercado Pago</label>
                     </div>
 
                     <!-- Formularios dinámicos según método de pago -->
                     <div id="cajaTarjeta" class="p-3 bg-light border rounded">
-                        <div class="mb-2">
-                            <label class="form-label small">Número de Tarjeta</label>
-                            <input type="text" class="form-control form-control-sm" placeholder="0000 0000 0000 0000"
-                                maxlength="16">
+                        <!-- Sección para mostrar tarjetas guardadas -->
+                        <div id="tarjetasGuardadas" class="mb-3" style="display: none;">
+                            <label class="form-label small fw-bold text-primary">Tus tarjetas guardadas</label>
+                            <select id="selectorTarjeta" class="form-select form-select-sm mb-2">
+                                <option value="">Seleccionar o usar una tarjeta nueva...</option>
+                            </select>
                         </div>
-                        <div class="row">
-                            <div class="col-6">
-                                <label class="form-label small">Vencimiento</label>
-                                <input type="text" class="form-control form-control-sm" placeholder="MM/YY"
-                                    maxlength="5">
+
+                        <!-- Formulario de captura -->
+                        <div id="formNuevaTarjeta">
+                            <div class="mb-2">
+                                <label class="form-label small">Número de Tarjeta</label>
+                                <input type="text" id="ccNumero" class="form-control form-control-sm"
+                                    placeholder="0000 0000 0000 0000" maxlength="19">
                             </div>
-                            <div class="col-6">
-                                <label class="form-label small">CVV</label>
-                                <input type="password" class="form-control form-control-sm" placeholder="123"
-                                    maxlength="3">
+                            <div class="row">
+                                <div class="col-6">
+                                    <label class="form-label small">Vencimiento</label>
+                                    <input type="text" id="ccVenc" class="form-control form-control-sm"
+                                        placeholder="MM/YY" maxlength="5">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small">CVV</label>
+                                    <input type="password" id="ccCvv" class="form-control form-control-sm"
+                                        placeholder="123" maxlength="3">
+                                </div>
+                            </div>
+                            <div class="form-check mt-3">
+                                <input class="form-check-input" type="checkbox" id="checkGuardarTarjeta">
+                                <label class="form-check-label small text-muted" for="checkGuardarTarjeta">
+                                    Guardar esta tarjeta de forma segura para compras futuras
+                                </label>
                             </div>
                         </div>
                     </div>
 
-                    <div id="cajaOxxo" class="p-3 bg-light border rounded text-center" style="display: none;">
-                        <p class="small m-0 text-muted">Se generará un código de barras al finalizar para pago en
-                            sucursal OXXO en las próximas 24 horas.</p>
+                    <div id="cajaMercadoPago" class="p-3 bg-light border rounded text-center" style="display: none;">
+                        <p class="small text-muted mb-3">Paga de forma segura con tu cuenta de Mercado Pago o tarjetas
+                            guardadas.</p>
+                        <!-- Logo de Mercado Pago -->
+                        <img src="https://http2.mlstatic.com/frontend-assets/mp-web-navigation/ui-navigation/5.20.1/mercadopago/logo__large@2x.png"
+                            alt="Mercado Pago" style="height: 30px;">
                     </div>
 
                     <div id="cajaPaypal" class="p-3 bg-light border rounded text-center" style="display: none;">

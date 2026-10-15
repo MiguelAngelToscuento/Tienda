@@ -1,6 +1,7 @@
 package toscuento.sistema.store.Repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import toscuento.sistema.store.model.Producto;
 import java.util.List; // IMPORTANTE: No olvides importar esta librería
@@ -22,5 +23,8 @@ public interface ProductoRepository extends JpaRepository<Producto, Integer> {
     List<Producto> findByActivoTrue();
 
     List<Producto> findByTiendaIdAndActivoTrue(Integer idTienda);
+
+    @Query("SELECT p FROM Producto p WHERE p.activo = true AND p.tienda.activo = true")
+    List<Producto> obtenerCatalogoActivo();
 
 }

@@ -7,12 +7,12 @@ if (!usuarioId) {
   window.location.href = "index.html";
 }
 
-// Cerrar sesión del vendedor
+// Cerrar sesión
 document
   .getElementById("btnCerrarSesion")
   .addEventListener("click", function () {
     localStorage.clear();
-    alert("Sesion cerrada correctamente.");
+    alert("Sesión cerrada correctamente.");
     window.location.href = "index.html";
   });
 
@@ -22,11 +22,35 @@ document
   .addEventListener("submit", function (e) {
     e.preventDefault();
 
+    const titulo = document.getElementById("prodNombre").value.trim();
+    const categoria = document.getElementById("prodCategoria").value.trim();
+    const descripcion = document.getElementById("prodDescripcion").value.trim();
+    const precioTexto = document
+      .getElementById("prodPrecio")
+      .value.replace(/,/g, "");
+    const precio = parseFloat(precioTexto);
+    const stock = parseInt(document.getElementById("prodStock").value);
+
+    if (titulo === "" || categoria === "" || descripcion === "") {
+      alert(
+        "Los campos de texto no pueden estar vaciós ni contener solo espacios.",
+      );
+      return;
+    }
+    if (isNaN(precio) || precio < 0) {
+      alert("El precio debe ser un número válido mayor o igual a cero.");
+      return;
+    }
+    if (isNaN(stock) || stock < 0) {
+      alert("El stock no puede ser un número negativo.");
+      return;
+    }
+
     const idProducto = document.getElementById("prodId").value;
     const formData = new FormData();
 
     formData.append("titulo", document.getElementById("prodNombre").value);
-    formData.append("precio", document.getElementById("prodPrecio").value);
+    formData.append("precio", precio);
     formData.append("stock", document.getElementById("prodStock").value);
     formData.append(
       "categoria",
@@ -39,13 +63,29 @@ document
     formData.append("tiendaId", tiendaId);
 
     const inputImagen = document.getElementById("prodImagen");
+
+    if (!idProducto && inputImagen.files.length === 0) {
+      alert(
+        "Debes subir una imagen obligatoriamente para registrar el producto.",
+      );
+      return;
+    }
+
     if (inputImagen.files.length > 0) {
+      const tamanoMB = inputImagen.files[0].size / (1024 * 1024);
+      if (tamanoMB > 2) {
+        alert(
+          "La imagen es muy pesada. El tamaño máximo permitido es de 2 MB.",
+        );
+        inputImagen.value = ""; // Limpia el archivo seleccionado para que elija otro
+        return;
+      }
       formData.append("archivoImagen", inputImagen.files[0]);
     }
 
     const url = idProducto
-      ? `http://localhost:8080/producto/update/${idProducto}`
-      : "http://localhost:8080/producto/save";
+      ? `/producto/update/${idProducto}`
+      : "/producto/save";
     const metodo = idProducto ? "PUT" : "POST";
 
     fetch(url, {
@@ -67,21 +107,26 @@ document
       .catch((error) => console.error("Error al procesar el producto:", error));
   });
 
-// Cargar datos en el modal para editar
-function editarProducto(id, titulo, precio, stock, categoria, descripcion) {
-  document.getElementById("tituloModalProducto").innerText = "Editar Artículo";
-  document.getElementById("prodId").value = id;
-  document.getElementById("prodNombre").value = titulo;
-  document.getElementById("prodPrecio").value = precio;
-  document.getElementById("prodStock").value = stock;
-  document.getElementById("prodCategoria").value = categoria;
-  document.getElementById("prodDescripcion").value = descripcion;
-  document.getElementById("prodImagen").value = "";
+// Cargar datos en el modal para editar buscando por ID
+window.editarProducto = function (idProducto) {
+  const producto = productosGlobales.find((p) => p.id === idProducto);
 
-  const miModal = document.getElementById("modalAgregarProducto");
-  const modalBootstrap = bootstrap.Modal.getOrCreateInstance(miModal);
-  modalBootstrap.show();
-}
+  if (producto) {
+    document.getElementById("tituloModalProducto").innerText =
+      "Editar Artículo";
+    document.getElementById("prodId").value = producto.id;
+    document.getElementById("prodNombre").value = producto.titulo;
+    document.getElementById("prodPrecio").value = producto.precio;
+    document.getElementById("prodStock").value = producto.stock;
+    document.getElementById("prodCategoria").value = producto.categoria;
+    document.getElementById("prodDescripcion").value = producto.descripcion;
+    document.getElementById("prodImagen").value = "";
+
+    const miModal = document.getElementById("modalAgregarProducto");
+    const modalBootstrap = bootstrap.Modal.getOrCreateInstance(miModal);
+    modalBootstrap.show();
+  }
+};
 
 // Limpiar modal para producto nuevo
 document
@@ -96,7 +141,7 @@ document
 // Eliminar producto
 function eliminarProducto(idProducto) {
   if (confirm("¿Estás seguro de eliminar este producto?")) {
-    fetch(`http://localhost:8080/producto/delete/${idProducto}`, {
+    fetch(`/producto/delete/${idProducto}`, {
       method: "DELETE",
     })
       .then((response) => response.json())
@@ -115,7 +160,7 @@ function eliminarProducto(idProducto) {
 // Reactivar producto inactivo
 function reactivarProducto(idProducto) {
   if (confirm("¿Deseas volver a activar este producto?")) {
-    fetch(`http://localhost:8080/producto/reactivate/${idProducto}`, {
+    fetch(`/producto/reactivate/${idProducto}`, {
       method: "PUT",
     })
       .then((response) => response.json())
@@ -133,7 +178,7 @@ function reactivarProducto(idProducto) {
 
 // Obtener productos desde el backend
 function cargarProductos() {
-  fetch(`http://localhost:8080/producto/tienda/${tiendaId}`)
+  fetch(`/producto/tienda/${tiendaId}`)
     .then((response) => response.json())
     .then((data) => {
       if (data.success && data.data.length > 0) {
@@ -149,7 +194,7 @@ function cargarProductos() {
 // Obtener logo y nombre de la tienda
 function cargarInfoTienda() {
   const idDelUsuario = localStorage.getItem("usuarioId");
-  fetch(`http://localhost:8080/tienda/usuario/${idDelUsuario}`)
+  fetch(`/tienda/usuario/${idDelUsuario}`)
     .then((response) => response.json())
     .then((data) => {
       if (data.success && data.data != null) {
@@ -194,9 +239,9 @@ if (btnVerOrdenes) {
   });
 }
 
-// Obtener pedidos
+// Obtener pedidos recibidos
 function cargarPedidosRecibidos() {
-  fetch(`http://localhost:8080/orden/tienda/${tiendaId}`)
+  fetch(`/orden/tienda/${tiendaId}`)
     .then((response) => response.json())
     .then((data) => {
       if (data.success && data.data.length > 0) {
@@ -263,7 +308,7 @@ function cargarPedidosRecibidos() {
 // Cambiar estado del pedido
 function cambiarEstadoEnvio(idOrden, nuevoEstado) {
   if (confirm(`¿Marcar este pedido como '${nuevoEstado}'?`)) {
-    fetch(`http://localhost:8080/orden/update-status/${idOrden}`, {
+    fetch(`/orden/update-status/${idOrden}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ estadoEnvio: nuevoEstado }),
@@ -299,7 +344,7 @@ function procesarProductosDelServidor(datosDelBackend) {
 }
 
 function actualizarVista() {
-  // Filtrar
+  // Filtrar productos
   let productosFiltrados = productosGlobales;
   if (categoriaActual !== "Todas") {
     productosFiltrados = productosGlobales.filter(
@@ -307,7 +352,7 @@ function actualizarVista() {
     );
   }
 
-  // Paginar
+  // Paginar resultados
   const totalPaginas =
     Math.ceil(productosFiltrados.length / limitePorPagina) || 1;
   if (paginaActual > totalPaginas) paginaActual = totalPaginas;
@@ -357,19 +402,22 @@ function actualizarVista() {
       ? `<button onclick="eliminarProducto(${prod.id})" class="btn btn-sm btn-outline-danger">Eliminar</button>`
       : `<button onclick="reactivarProducto(${prod.id})" class="btn btn-sm btn-outline-success">Reactivar</button>`;
 
+    // Escapar el título para el atributo 'title' por si contiene comillas
+    const tituloSeguro = prod.titulo.replace(/"/g, "&quot;");
+
     html += `
             <div class="col-md-4 col-sm-6 mb-4">
                 <div class="card h-100 shadow-sm position-relative" style="${cardEstilo}">
                     ${badgeEtiqueta}
-                    <img src="${imagen}" class="card-img-top p-2" alt="${prod.titulo}" style="height: 200px; object-fit: contain; background-color: #ffffff; width: 100%;">
+                    <img src="${imagen}" class="card-img-top p-2" alt="${tituloSeguro}" style="height: 200px; object-fit: contain; background-color: #ffffff; width: 100%;">
                     <div class="card-body">
-                        <!-- Aquí aplicamos el límite de 2 líneas y ajustamos un poco el tamaño del texto -->
-                        <h3 class="card-title fs-6 fw-bold" title="${prod.titulo}" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.5em;">${prod.titulo}</h3>
+                        <h3 class="card-title fs-6 fw-bold" title="${tituloSeguro}" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.5em;">${prod.titulo}</h3>
                         <p class="card-text text-muted mb-1">Precio: $${formatearPrecio(prod.precio)}</p>
                         <p class="card-text text-muted">Stock: ${prod.stock} unidades</p>
                     </div>
                     <div class="card-footer border-top-0 d-flex justify-content-between" style="background-color: transparent;">
-                        <button onclick="editarProducto(${prod.id}, '${prod.titulo}', ${prod.precio}, ${prod.stock}, '${prod.categoria}', '${prod.descripcion}')" class="btn btn-sm btn-outline-primary">Editar</button>
+                        <!-- Se pasa únicamente el ID para evitar errores de sintaxis con texto especial -->
+                        <button onclick="editarProducto(${prod.id})" class="btn btn-sm btn-outline-primary">Editar</button>
                         ${botonAccion}
                     </div>
                 </div>
@@ -387,24 +435,41 @@ function actualizarVista() {
   }
 }
 
-// Botones de paginación
+// Cambiar categoría seleccionada
 function cambiarCategoria(nuevaCategoria) {
   categoriaActual = nuevaCategoria;
   paginaActual = 1;
   actualizarVista();
 }
 
+// Cambiar de página
 function cambiarPagina(delta) {
   paginaActual += delta;
   actualizarVista();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
+
+// Dar formato monetario al precio
 function formatearPrecio(precio) {
   return Number(precio).toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
 }
+
+//formater el precio a moneda
+document.getElementById("prodPrecio").addEventListener("blur", function (e) {
+  let valorLimpio = e.target.value.replace(/,/g, "");
+  let valor = parseFloat(valorLimpio);
+
+  if (!isNaN(valor) && valor >= 0) {
+    e.target.value = valor.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  }
+});
+
 // Inicialización de la vista
 cargarInfoTienda();
 cargarProductos();

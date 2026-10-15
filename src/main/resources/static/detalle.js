@@ -10,7 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   //info del producto
-  fetch(`http://localhost:8080/producto/${idProducto}`)
+  //fetch(`http://localhost:8080/producto/${idProducto}`)
+  fetch(`/producto/${idProducto}`)
     .then((res) => res.json())
     .then((data) => {
       if (data.success && data.data) {
@@ -76,7 +77,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Función independiente para recomendaciones en la página de detalle
 function cargarRecomendadosIndependiente(categoria, idActual) {
-  fetch("http://localhost:8080/producto/findAll")
+  //fetch("http://localhost:8080/producto/findAll")
+  fetch("/producto/findAll")
     .then((res) => res.json())
     .then((data) => {
       if (data.success) {
@@ -102,7 +104,7 @@ function cargarRecomendadosIndependiente(categoria, idActual) {
             prod.titulo.trim().toLowerCase().replace(/\s+/g, "-"),
           );
           html += `
-                        <div class="card border-0 shadow-sm" style="cursor:pointer;" onclick="window.location.href='detalle.html?id=${prod.id}'">
+                        <div class="card border-0 shadow-sm" style="cursor:pointer;" onclick="window.location.href='detalle.html?id=${prod.id}&nombre=${nombreUrl}'">
                             <div class="row g-0 align-items-center">
                                 <div class="col-4">
                                     <img src="${imagen}" class="img-fluid rounded-start" style="height: 90px; object-fit: cover; width: 100%;">

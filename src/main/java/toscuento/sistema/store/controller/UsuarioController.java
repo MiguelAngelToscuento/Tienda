@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.servlet.http.HttpServletRequest;
 import toscuento.sistema.store.Repository.UsuarioRepository;
 import toscuento.sistema.store.model.Usuario;
 import toscuento.sistema.store.service.UsuarioService;
@@ -36,8 +38,11 @@ public class UsuarioController {
     private JavaMailSender mailSender;
 
     @PostMapping("/solicitar-recuperacion")
-    public ResponseEntity<Map<String, Object>> solicitarRecuperacion(@RequestBody Map<String, String> payload) {
-        String email = payload.get("email");
+    public ResponseEntity<Map<String, Object>> solicitarRecuperacion(@RequestBody Map<String, String> body,
+            HttpServletRequest request) {
+
+        String email = body.get("email");
+
         Usuario usuario = usuarioRepository.findByCorreo(email).orElse(null);
         if (usuario == null) {
             return createResponse(false, "No existe una cuenta con ese correo.", null, HttpStatus.NOT_FOUND);
@@ -48,8 +53,14 @@ public class UsuarioController {
         usuario.setTokenRecuperacion(token);
         usuarioRepository.save(usuario);
 
+        // leer la url para unir el link con el endpoint
+        String originUrl = request.getHeader("Origin");
+        if (originUrl == null) {
+            originUrl = "http://localhost:8080"; // Respaldo por si falla
+        }
+
         // crear enlace
-        String enlace = "http://localhost:8080/restablecer.html?token=" + token;
+        String enlace = originUrl + "/restablecer.html?token=" + token;
 
         try {
             // enviar correo con enlace

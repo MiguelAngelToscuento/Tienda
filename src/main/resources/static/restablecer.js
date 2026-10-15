@@ -24,7 +24,8 @@ document
     btn.innerText = "Guardando...";
     btn.disabled = true;
 
-    fetch("http://localhost:8080/usuario/reestablecer-contraseña", {
+    //fetch("http://localhost:8080/usuario/reestablecer-contraseña", {
+    fetch("/usuario/reestablecer-contraseña", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
 

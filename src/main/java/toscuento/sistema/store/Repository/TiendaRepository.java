@@ -10,6 +10,7 @@ import java.util.Optional;
 @Repository
 public interface TiendaRepository extends JpaRepository<Tienda, Integer> {
     Optional<Tienda> findByUsuarioId(Integer id);
+
     List<Tienda> findByActivoTrue();
 
 }

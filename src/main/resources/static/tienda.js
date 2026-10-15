@@ -12,7 +12,10 @@ document.getElementById("formTienda").addEventListener("submit", function (e) {
 
   // Preparar los datos y archivos para el envío
   const formData = new FormData();
-  formData.append("nombreTienda", document.getElementById("nombreTienda").value);
+  formData.append(
+    "nombreTienda",
+    document.getElementById("nombreTienda").value,
+  );
   formData.append("rfc", document.getElementById("rfcTienda").value);
   formData.append("usuarioId", usuarioId);
 
@@ -23,7 +26,8 @@ document.getElementById("formTienda").addEventListener("submit", function (e) {
   }
 
   // Enviar los datos de la tienda al servidor
-  fetch("http://localhost:8080/tienda/save", {
+  //  fetch("http://localhost:8080/tienda/save", {
+  fetch("/tienda/save", {
     method: "POST",
     body: formData,
   })

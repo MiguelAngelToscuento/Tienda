@@ -56,7 +56,7 @@ if (formPerfil) {
       usuario: { id: parseInt(usuarioId) },
     };
 
-    fetch("http://localhost:8080/cliente/save", {
+    fetch("/cliente/save", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(nuevoCliente),
@@ -95,18 +95,68 @@ const productosPorPagina = 8;
 
 // Configuración principal del catálogo
 const contenedorCatalogo = document.getElementById("catalogoGlobal");
-
 if (contenedorCatalogo) {
-  // Búsqueda de productos por texto
   const inputBusqueda = document.getElementById("inputBusqueda");
+  const cajaSugerencias = document.getElementById("cajaSugerencias");
+
   if (inputBusqueda) {
     inputBusqueda.addEventListener("input", function (e) {
       busquedaActiva = e.target.value;
       paginaActual = 1;
+
+      //  Lógica de sugerencias estilo YouTube
+      const texto = busquedaActiva.toLowerCase().trim();
+      if (texto.length > 0) {
+        // Buscar hasta 5 productos que coincidan
+        const sugerencias = productosGlobales
+          .filter(
+            (p) =>
+              p.titulo.toLowerCase().includes(texto) ||
+              p.categoria.toLowerCase().includes(texto),
+          )
+          .slice(0, 5);
+
+        if (sugerencias.length > 0) {
+          let htmlSugerencias = "";
+          sugerencias.forEach((prod) => {
+            htmlSugerencias += `<button type="button" class="list-group-item list-group-item-action text-start" onclick="seleccionarSugerencia('${prod.titulo.replace(/'/g, "\\'")}')">${prod.titulo}</button>`;
+          });
+          cajaSugerencias.innerHTML = htmlSugerencias;
+          cajaSugerencias.style.display = "block"; // Mostrar la caja
+        } else {
+          cajaSugerencias.style.display = "none"; // Ocultar si no hay coincidencias
+        }
+      } else {
+        cajaSugerencias.style.display = "none"; // Ocultar si está vacío
+      }
+
+      // Ejecutar el filtro de tarjetas en el fondo
       actualizarUrlYRenderizar();
+    });
+
+    // Ocultar la caja de sugerencias si el usuario da clic fuera del buscador
+    document.addEventListener("click", function (e) {
+      if (
+        !inputBusqueda.contains(e.target) &&
+        !cajaSugerencias.contains(e.target)
+      ) {
+        cajaSugerencias.style.display = "none";
+      }
     });
   }
 }
+
+//cuando el usuario haga clic en una recomendación de la lista
+window.seleccionarSugerencia = function (tituloEscogido) {
+  const inputBusqueda = document.getElementById("inputBusqueda");
+  const cajaSugerencias = document.getElementById("cajaSugerencias");
+  inputBusqueda.value = tituloEscogido;
+  busquedaActiva = tituloEscogido;
+  paginaActual = 1;
+  cajaSugerencias.style.display = "none";
+  actualizarUrlYRenderizar();
+};
+
 // Mostrar ventana emergente de pago
 const btnPagar = document.getElementById("btnPagar");
 if (btnPagar) {
@@ -145,8 +195,8 @@ radiosPago.forEach((radio) => {
       this.value === "Tarjeta" ? "block" : "none";
     document.getElementById("cajaPaypal").style.display =
       this.value === "PayPal" ? "block" : "none";
-    document.getElementById("cajaOxxo").style.display =
-      this.value === "Oxxo" ? "block" : "none";
+    document.getElementById("cajaMercadoPago").style.display =
+      this.value === "MercadoPago" ? "block" : "none";
 
     if (btnConfirmarCompra) {
       btnConfirmarCompra.style.display =
@@ -176,7 +226,7 @@ function guardarOrdenEnBaseDeDatos(metodoElegido) {
     })),
   };
 
-  fetch("http://localhost:8080/orden/save", {
+  fetch("/orden/save", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(nuevaOrden),
@@ -184,9 +234,9 @@ function guardarOrdenEnBaseDeDatos(metodoElegido) {
     .then((response) => response.json())
     .then((data) => {
       if (data.success) {
-        if (metodoElegido === "Oxxo") {
+        if (metodoElegido === "MercadoPago") {
           alert(
-            "¡Orden generada! proximamente se habilitará un código de barras para completar el pago.",
+            "¡Simulación de Mercado Pago exitosa! Orden generada y registrada en modo prueba.",
           );
         } else {
           alert(
@@ -203,19 +253,126 @@ function guardarOrdenEnBaseDeDatos(metodoElegido) {
     .catch((error) => console.error("Error al procesar la compra: ", error));
 }
 
-// Procesar pago con Tarjeta u Oxxo
+// --- INICIO: Lógica para Tarjetas Guardadas ---
+const inputCcNum = document.getElementById("ccNumero");
+const inputCcVenc = document.getElementById("ccVenc");
+const selectorTarjeta = document.getElementById("selectorTarjeta");
+const formNuevaTarjeta = document.getElementById("formNuevaTarjeta");
+
+if (inputCcNum) {
+  inputCcNum.addEventListener("input", function (e) {
+    let valor = e.target.value.replace(/\D/g, "");
+    valor = valor.replace(/(\d{4})/g, "$1 ").trim();
+    e.target.value = valor;
+  });
+}
+
+if (inputCcVenc) {
+  inputCcVenc.addEventListener("input", function (e) {
+    let valor = e.target.value.replace(/\D/g, "");
+    if (valor.length > 2) {
+      valor = valor.substring(0, 2) + "/" + valor.substring(2, 4);
+    }
+    e.target.value = valor;
+  });
+}
+
+function cargarTarjetasGuardadas() {
+  const clienteId = localStorage.getItem("clienteId");
+  const tarjetasGuardadas =
+    JSON.parse(localStorage.getItem(`tarjetas_${clienteId}`)) || [];
+
+  if (tarjetasGuardadas.length > 0 && selectorTarjeta) {
+    document.getElementById("tarjetasGuardadas").style.display = "block";
+    let opciones =
+      '<option value="">Seleccionar o usar una tarjeta nueva...</option>';
+    tarjetasGuardadas.forEach((t, index) => {
+      opciones += `<option value="${index}">💳 Terminada en ${t.ultimos4} (Vence ${t.vencimiento})</option>`;
+    });
+    selectorTarjeta.innerHTML = opciones;
+  }
+}
+
+if (selectorTarjeta) {
+  selectorTarjeta.addEventListener("change", function () {
+    if (this.value !== "") {
+      if (formNuevaTarjeta) {
+        formNuevaTarjeta.style.opacity = "0.4";
+        formNuevaTarjeta.style.pointerEvents = "none";
+      }
+    } else {
+      if (formNuevaTarjeta) {
+        formNuevaTarjeta.style.opacity = "1";
+        formNuevaTarjeta.style.pointerEvents = "auto";
+      }
+    }
+  });
+}
+
+// Cargar las tarjetas al abrir el modal de pago
+const modalCheckoutElement = document.getElementById("modalCheckout");
+if (modalCheckoutElement) {
+  modalCheckoutElement.addEventListener(
+    "show.bs.modal",
+    cargarTarjetasGuardadas,
+  );
+}
+// --- FIN: Lógica para Tarjetas Guardadas ---
+
+// Procesar pago con validación de Tarjeta
 if (btnConfirmarCompra) {
   btnConfirmarCompra.addEventListener("click", function () {
     const metodoElegido = document.querySelector(
       'input[name="metodoPago"]:checked',
     ).value;
+
+    if (metodoElegido === "Tarjeta") {
+      const clienteId = localStorage.getItem("clienteId");
+      const usarTarjetaGuardada =
+        selectorTarjeta && selectorTarjeta.value !== "";
+      const checkGuardar = document.getElementById("checkGuardarTarjeta");
+      const inputCvv = document.getElementById("ccCvv");
+
+      if (!usarTarjetaGuardada) {
+        const numTarjeta = inputCcNum
+          ? inputCcNum.value.replace(/\s/g, "")
+          : "";
+        const vencimiento = inputCcVenc ? inputCcVenc.value : "";
+        const cvv = inputCvv ? inputCvv.value : "";
+
+        if (
+          numTarjeta.length < 15 ||
+          vencimiento.length < 5 ||
+          cvv.length < 3
+        ) {
+          alert(
+            "Por favor, completa correctamente los 16 dígitos, vencimiento y CVV.",
+          );
+          return;
+        }
+
+        // Guardar tarjeta en localStorage si el checkbox está marcado
+        if (checkGuardar && checkGuardar.checked) {
+          let tarjetas =
+            JSON.parse(localStorage.getItem(`tarjetas_${clienteId}`)) || [];
+          tarjetas.push({
+            ultimos4: numTarjeta.slice(-4),
+            vencimiento: vencimiento,
+          });
+          localStorage.setItem(
+            `tarjetas_${clienteId}`,
+            JSON.stringify(tarjetas),
+          );
+        }
+      }
+    }
+
     btnConfirmarCompra.innerText = "Procesando pago...";
     btnConfirmarCompra.disabled = true;
     guardarOrdenEnBaseDeDatos(metodoElegido);
   });
 }
 
-// Inyección de botones de pago con PayPal
 // Inyección de botones de pago con PayPal
 if (window.paypal && document.getElementById("paypal-button-container")) {
   paypal
@@ -323,7 +480,7 @@ function renderizarFiltros() {
 
 // Obtener todos los productos desde el servidor
 function cargarCatalogoCompleto() {
-  fetch("http://localhost:8080/producto/findAll")
+  fetch("/producto/findAll")
     .then((response) => response.json())
     .then((data) => {
       if (data.success) {
@@ -531,7 +688,7 @@ function cargarMisCompras() {
   const clienteId = localStorage.getItem("clienteId");
   if (!clienteId) return;
 
-  fetch(`http://localhost:8080/orden/cliente/${clienteId}`)
+  fetch(`/orden/cliente/${clienteId}`)
     .then((response) => response.json())
     .then((data) => {
       const contenedor = document.getElementById("listaMisCompras");
@@ -666,8 +823,7 @@ function actualizarVistaFavoritos() {
         <div class="card border-0 shadow-sm">
             <div class="row g-0 align-items-center">
                 <div class="col-4">
-                    <img src="${item.imagen}" class="img-fluid rounded-start" style="height: 80px; object-fit: cover; width: 100%;">
-                </div>
+<img src="${item.imagen}" class="img-fluid rounded-start border-end" style="height: 90px; width: 100%; object-fit: contain; background-color: #ffffff; padding: 5px;">                </div>
                 <div class="col-8">
                     <div class="card-body p-2">
                         <h6 class="card-title text-truncate mb-1 small">${item.titulo}</h6>
@@ -703,12 +859,15 @@ function abrirDetalleProducto(id) {
 
 // Obtener y dibujar reseñas de un producto
 function cargarResenas(idProducto) {
-  fetch(`http://localhost:8080/resena/producto/${idProducto}`)
+  fetch(`/resena/producto/${idProducto}`)
     .then((res) => res.json())
     .then((data) => {
       const contenedor = document.getElementById("listaResenas");
       if (data.success && data.data.length > 0) {
         let html = "";
+        const resenasOrdenadas = data.data.sort(
+          (a, b) => new Date(b.fechaCreacion) - new Date(a.fechaCreacion),
+        );
         data.data.forEach((r) => {
           const estrellas = "⭐".repeat(r.calificacion);
           const fecha = new Date(r.fechaCreacion).toLocaleDateString("es-MX", {
@@ -765,7 +924,7 @@ if (formResena) {
       cliente: { id: parseInt(clienteId) },
     };
 
-    fetch("http://localhost:8080/resena/save", {
+    fetch("/resena/save", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(nuevaResena),
@@ -836,7 +995,7 @@ function mostarNotificacion(mensaje, colorFondo) {
 
 //cargar productos en memoria para pantallas
 if (!document.getElementById("catalogoGlobal")) {
-  fetch("http://localhost:8080/producto/findAll")
+  fetch("/producto/findAll")
     .then((response) => response.json())
     .then((data) => {
       if (data.success) {
@@ -848,6 +1007,7 @@ if (!document.getElementById("catalogoGlobal")) {
       console.error("Error cargando productos para el carrito: ", error),
     );
 }
+
 function formatearPrecio(precio) {
   return Number(precio).toLocaleString("en-US", {
     minimumFractionDigits: 2,
